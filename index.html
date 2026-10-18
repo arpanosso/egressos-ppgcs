@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa dos egressos do PPGCS – FCAV/UNESP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@500;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+.ppgcs-mapa-int{--solo-o:#2b1f17;--solo-b:#8e3b24;--solo-c:#c99a5b;--tinta:#241a14;--texto:#4a4039;--linha:#e4ddd5;font-family:"Source Sans 3","Segoe UI",Arial,sans-serif;color:var(--texto);max-width:1100px;margin:0 auto;padding:2rem 1rem}
+.ppgcs-mapa-int__titulo{font-family:"Alegreya",Georgia,serif;font-weight:700;font-size:clamp(1.6rem,3.5vw,2.2rem);line-height:1.1;color:var(--tinta);margin:0 0 .4rem}
+.ppgcs-mapa-int__resumo{margin:0 0 1.25rem;font-size:1.05rem}
+.ppgcs-mapa-int__resumo strong{color:var(--solo-b);font-family:"Alegreya",Georgia,serif;font-size:1.35rem}
+html,body{height:100%;margin:0}
+#ppgcs-mapa-int{position:fixed;inset:0;background:#efe9e2;--solo-o:#2b1f17;--solo-b:#8e3b24;--tinta:#241a14}
+.ppgcs-mapa-int__dica{margin:.6rem 0 0;font-size:.85rem;color:#8a7f76}
+.ppgcs-pin{width:16px;height:16px;border-radius:50%;background:var(--solo-b);border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.35)}
+.ppgcs-grupo{display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--solo-b);color:#fff;font-weight:700;border:3px solid rgba(255,255,255,.85);box-shadow:0 0 0 6px rgba(142,59,36,.22);font-family:"Source Sans 3",Arial,sans-serif}
+.ppgcs-pop strong{display:block;font-family:"Alegreya",Georgia,serif;font-size:1.05rem;color:var(--tinta)}
+.ppgcs-pop span{display:block;color:#6b6058;font-size:.9rem;line-height:1.35}
+.ppgcs-pop em{display:block;font-style:normal;color:var(--solo-b);font-weight:600;font-size:.85rem;margin-top:.15rem}
+</style>
+</head>
+<body>
+<div id="ppgcs-mapa-int" class="ppgcs-mapa-int" role="region" aria-label="Mapa interativo dos egressos do PPGCS"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+<script>
+(function(){
+  var egressos = [{"n": "Adilson José Rocha Mello", "c": "Doutorado", "i": "Uniara / IMESB", "l": "Araraquara, SP", "lat": -21.7845, "lon": -48.178}, {"n": "Adilson José Rocha Mello", "c": "Doutorado", "i": "Uniara / IMESB", "l": "Bebedouro, SP", "lat": -20.9491, "lon": -48.4791}, {"n": "Gilcileia dos Santos Rizzatti", "c": "Doutorado", "i": "Coordenadoria de Assistência Técnica Integral (CATI / SAA-SP)", "l": "Sertãozinho, SP", "lat": -21.1316, "lon": -47.9875}, {"n": "Alba Leonor da Silva Martins", "c": "Doutorado", "i": "Embrapa Solos", "l": "Rio de Janeiro, RJ", "lat": -22.9129, "lon": -43.2003}, {"n": "Carlos Alberto Kenji Taniguchi", "c": "Doutorado", "i": "Embrapa Agroindústria Tropical", "l": "Fortaleza, CE", "lat": -3.71664, "lon": -38.5423}, {"n": "Fabiana Camargo dos Reis", "c": "Mestrado", "i": "Centro Paula Souza (ETEC) / FCAV-UNESP", "l": "Jaboticabal, SP", "lat": -21.252, "lon": -48.3252}, {"n": "Fabiana Camargo dos Reis", "c": "Mestrado", "i": "Centro Paula Souza (ETEC) / FCAV-UNESP", "l": "Santa Rita do Passa Quatro, SP", "lat": -21.7083, "lon": -47.478}, {"n": "Kleber Aloisio Quintana", "c": "Doutorado", "i": "Instituto Federal de Educação, Ciência e Tecnologia de Mato Grosso do Sul", "l": "Ponta Porã, MS", "lat": -22.5296, "lon": -55.7203}, {"n": "Vanessa Lorencini da Silva", "c": "Mestrado", "i": "Usina Santa Adélia", "l": "Jaboticabal, SP", "lat": -21.252, "lon": -48.3252}, {"n": "Alan Rodrigo Panosso", "c": "Mestrado", "i": "UNESP/FCAV", "l": "Jaboticabal, SP", "lat": -21.252, "lon": -48.3252}];
+  var mapa = L.map('ppgcs-mapa-int', {scrollWheelZoom:false}).setView([-15, -52], 4);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 16,
+    attribution: 'Base: &copy; Esri, HERE, Garmin, &copy; OpenStreetMap'
+  }).addTo(mapa);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 16
+  }).addTo(mapa);
+  var grupos = L.markerClusterGroup({
+    showCoverageOnHover:false, maxClusterRadius:45,
+    disableClusteringAtZoom:11, spiderfyOnMaxZoom:true,
+    iconCreateFunction:function(c){
+      var n=c.getChildCount(), t=n<10?34:(n<50?42:52);
+      return L.divIcon({html:'<div class="ppgcs-grupo" style="width:'+t+'px;height:'+t+'px">'+n+'</div>', className:'', iconSize:[t,t]});
+    }
+  });
+  var pin = L.divIcon({html:'<div class="ppgcs-pin"></div>', className:'', iconSize:[16,16]});
+  function esc(s){return String(s).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
+  // Egressos na mesma cidade: espalha os pontos numa pequena espiral em volta da cidade
+  var porCidade = {};
+  egressos.forEach(function(e){ var k=e.lat+','+e.lon; (porCidade[k]=porCidade[k]||[]).push(e); });
+  Object.keys(porCidade).forEach(function(k){
+    var lista = porCidade[k];
+    lista.forEach(function(e,i){
+      if (lista.length > 1) {
+        var raio = 0.004*Math.sqrt(i+1), ang = i*2.39996;
+        e.lat = e.lat + raio*Math.sin(ang);
+        e.lon = e.lon + raio*Math.cos(ang)/Math.cos(e.lat*Math.PI/180);
+      }
+    });
+  });
+  egressos.forEach(function(e){
+    L.marker([e.lat, e.lon], {icon:pin})
+      .bindPopup('<div class="ppgcs-pop"><strong>'+esc(e.n)+'</strong><em>'+esc(e.c)+'</em><span>'+esc(e.i)+'</span><span>'+esc(e.l)+'</span></div>')
+      .addTo(grupos);
+  });
+  mapa.addLayer(grupos);
+  mapa.on('click', function(){ mapa.scrollWheelZoom.enable(); });
+})();
+</script>
+</body>
+</html>
