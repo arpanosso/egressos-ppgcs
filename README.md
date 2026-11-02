@@ -175,7 +175,7 @@ O site oficial passa a exibir a nova versão automaticamente, sem nenhuma altera
 
 Ajude a contar essa história. Confira o seu card e, se quiser atualizar suas informações, responda ao formulário do programa ou entre em contato com a coordenação.
 
-[**Formulário ed Egressos**](https://forms.gle/sBt4JKDp37hb26aN6) ·
+[**Formulário de Egressos**](https://forms.gle/sBt4JKDp37hb26aN6) ·
 
 ## Créditos
 
