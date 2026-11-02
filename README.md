@@ -12,7 +12,7 @@ Faculdade de Ciências Agrárias e Veterinárias (FCAV) · Unesp, Câmpus de Jab
 
 [**Página dos egressos**](https://arpanosso.github.io/egressos-ppgcs/) ·
 [**Indicadores**](https://arpanosso.github.io/egressos-ppgcs/indicadores/) ·
-[**Site do programa**]([https://www.fcav.unesp.br/](https://www.fcav.unesp.br/#!/pos-graduacao/programas-pg/agronomia-ciencia-do-solo/nossos-egressos/)
+[**Site do programa**](https://www.fcav.unesp.br/#!/pos-graduacao/programas-pg/agronomia-ciencia-do-solo) .
 
 </div>
 
