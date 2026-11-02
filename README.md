@@ -10,9 +10,9 @@ Faculdade de Ciências Agrárias e Veterinárias (FCAV) · Unesp, Câmpus de Jab
 ![Egressos](https://img.shields.io/badge/egressos_mapeados-500-c99a5b?style=for-the-badge)
 ![Fundação](https://img.shields.io/badge/desde-1996-2b1f17?style=for-the-badge)
 
-[**Página dos egressos**](https://SEU-USUARIO.github.io/egressos-ppgcs/) ·
-[**Indicadores**](https://SEU-USUARIO.github.io/egressos-ppgcs/indicadores/) ·
-[**Site do programa**](https://www.fcav.unesp.br/)
+[**Página dos egressos**](https://arpanosso.github.io/egressos-ppgcs/) ·
+[**Indicadores**](https://arpanosso.github.io/egressos-ppgcs/indicadores/) ·
+[**Site do programa**]([https://www.fcav.unesp.br/](https://www.fcav.unesp.br/#!/pos-graduacao/programas-pg/agronomia-ciencia-do-solo/nossos-egressos/)
 
 </div>
 
@@ -174,6 +174,8 @@ O site oficial passa a exibir a nova versão automaticamente, sem nenhuma altera
 ## Você é egresso do PPGCS?
 
 Ajude a contar essa história. Confira o seu card e, se quiser atualizar suas informações, responda ao formulário do programa ou entre em contato com a coordenação.
+
+[**Formulário ed Egressos**](https://forms.gle/sBt4JKDp37hb26aN6) ·
 
 ## Créditos
 
