@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Indicadores dos egressos do PPGCS – FCAV/Unesp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--o:#2b1f17;--a:#5a3b26;--b:#8e3b24;--c:#c99a5b;--tinta:#241a14;--texto:#4a4039;--suave:#8a7f76;--linha:#e4ddd5;--fundo:#f7f5f2;--card:#fff}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--fundo)}
+body{font-family:"Source Sans 3","Segoe UI",Arial,sans-serif;color:var(--texto);line-height:1.5}
+.pag{max-width:1100px;margin:0 auto;padding:2rem 1rem 3rem}
+h1,h2{font-family:"Alegreya",Georgia,serif;color:var(--tinta);font-weight:700;margin:0}
+h1{font-size:clamp(1.7rem,3.6vw,2.4rem);line-height:1.1}
+.sub{margin:.4rem 0 0;max-width:62ch}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0;margin:1.75rem 0 2rem;border-top:3px solid var(--b);border-bottom:1px solid var(--linha)}
+.kpi{padding:1rem 1rem 1rem 0}
+.kpi+.kpi{padding-left:1rem;border-left:1px solid var(--linha)}
+.kpi b{display:block;font-family:"Alegreya",Georgia,serif;font-size:2.2rem;line-height:1;color:var(--b)}
+.kpi span{display:block;margin-top:.35rem;font-size:.92rem;line-height:1.3}
+.painel{background:var(--card);border:1px solid var(--linha);border-radius:4px;padding:1.25rem 1.25rem 1rem}
+.painel h2{font-size:1.25rem;margin-bottom:.15rem}
+.base{margin:0 0 1rem;font-size:.85rem;color:var(--suave)}
+.grade{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.25rem;margin-top:1.25rem}
+.anual{position:relative}
+.anos{display:flex;align-items:flex-end;gap:4px;height:240px;padding-top:1.4rem;overflow-x:auto}
+.ano{flex:1 0 22px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;cursor:default}
+.ano__pilha{width:100%;display:flex;flex-direction:column;border-radius:2px 2px 0 0;overflow:hidden;min-height:0}
+.ano__m{background:var(--c)}
+.ano__d{background:var(--b)}
+.ano__tot{font-size:.72rem;color:var(--suave);margin-bottom:2px}
+.ano__rot{font-size:.72rem;color:var(--suave);margin-top:4px;border-top:1px solid var(--linha);width:100%;text-align:center;padding-top:2px}
+.ano:hover .ano__pilha{filter:brightness(.88)}
+.leg{display:flex;flex-wrap:wrap;gap:.3rem 1.25rem;margin:.75rem 0 0;padding:0;list-style:none;font-size:.88rem}
+.leg i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:.4rem;vertical-align:-1px}
+.leg b{margin-left:.35rem;color:var(--tinta)}
+.bh{display:grid;grid-template-columns:minmax(0,11rem) minmax(0,1fr) 5.6rem;gap:.6rem;align-items:center;margin:.45rem 0;font-size:.92rem}
+.bh__rot{line-height:1.25;color:var(--tinta)}
+.bh__trilho{height:14px;background:#f1ece6;border-radius:2px;overflow:hidden}
+.bh__barra{display:block;height:100%}
+.bh__n{font-variant-numeric:tabular-nums;color:var(--tinta);font-weight:600;white-space:nowrap}
+.bh__n small{font-weight:400;color:var(--suave)}
+.nota{margin:.75rem 0 0;font-size:.88rem}
+.grande{font-family:"Alegreya",Georgia,serif;font-size:3.2rem;line-height:1;color:var(--b);margin:.25rem 0 .4rem}
+.faixa{display:flex;height:22px;border-radius:2px;overflow:hidden;margin:.5rem 0 0}
+.faixa span{display:block}
+.met{margin-top:2rem;font-size:.85rem;color:var(--suave);max-width:75ch}
+.met h2{font-size:1rem;color:var(--texto);margin-bottom:.3rem}
+@media (max-width:760px){.grade{grid-template-columns:1fr}.kpi+.kpi{border-left:0;padding-left:0}.kpi{border-bottom:1px solid var(--linha)}.bh{grid-template-columns:minmax(0,8rem) minmax(0,1fr) 5.2rem}}
+</style>
+</head>
+<body>
+<main class="pag">
+  <h1>Indicadores dos egressos</h1>
+  <p class="sub">Programa de Pós-Graduação em Agronomia (Ciência do Solo), FCAV/Unesp. Levantamento atualizado em novembro de 2026.</p>
+
+  <div class="kpis">
+    <div class="kpi"><b>500</b><span>egressos titulados</span></div>
+    <div class="kpi"><b>338</b><span>mestres formados</span></div>
+    <div class="kpi"><b>255</b><span>doutores formados</span></div>
+    <div class="kpi"><b>20</b><span>estados onde atuam</span></div>
+    <div class="kpi"><b>8</b><span>países fora do Brasil</span></div>
+  </div>
+
+  <section class="painel anual" aria-labelledby="t-anos">
+    <h2 id="t-anos">Titulações por ano</h2>
+    <p class="base">593 titulações entre 2000 e 2026. Passe o mouse sobre uma coluna para ver os números.</p>
+    <div class="anos"><div class="ano" title="2000: 1 titulações (0 mestrado, 1 doutorado)"><span class="ano__tot">1</span><div class="ano__pilha" style="height:2.1%"><span class="ano__m" style="flex:0"></span><span class="ano__d" style="flex:1"></span></div><span class="ano__rot">2000</span></div><div class="ano" title="2001: 0 titulações (0 mestrado, 0 doutorado)"><span class="ano__tot"></span><div class="ano__pilha" style="height:0.0%"><span class="ano__m" style="flex:0"></span><span class="ano__d" style="flex:0"></span></div><span class="ano__rot">01</span></div><div class="ano" title="2002: 1 titulações (1 mestrado, 0 doutorado)"><span class="ano__tot">1</span><div class="ano__pilha" style="height:2.1%"><span class="ano__m" style="flex:1"></span><span class="ano__d" style="flex:0"></span></div><span class="ano__rot">02</span></div><div class="ano" title="2003: 0 titulações (0 mestrado, 0 doutorado)"><span class="ano__tot"></span><div class="ano__pilha" style="height:0.0%"><span class="ano__m" style="flex:0"></span><span class="ano__d" style="flex:0"></span></div><span class="ano__rot">03</span></div><div class="ano" title="2004: 1 titulações (1 mestrado, 0 doutorado)"><span class="ano__tot">1</span><div class="ano__pilha" style="height:2.1%"><span class="ano__m" style="flex:1"></span><span class="ano__d" style="flex:0"></span></div><span class="ano__rot">04</span></div><div class="ano" title="2005: 1 titulações (1 mestrado, 0 doutorado)"><span class="ano__tot">1</span><div class="ano__pilha" style="height:2.1%"><span class="ano__m" style="flex:1"></span><span class="ano__d" style="flex:0"></span></div><span class="ano__rot">2005</span></div><div class="ano" title="2006: 9 titulações (9 mestrado, 0 doutorado)"><span class="ano__tot">9</span><div class="ano__pilha" style="height:19.1%"><span class="ano__m" style="flex:9"></span><span class="ano__d" style="flex:0"></span></div><span class="ano__rot">06</span></div><div class="ano" title="2007: 8 titulações (8 mestrado, 0 doutorado)"><span class="ano__tot">8</span><div class="ano__pilha" style="height:17.0%"><span class="ano__m" style="flex:8"></span><span class="ano__d" style="flex:0"></span></div><span class="ano__rot">07</span></div><div class="ano" title="2008: 12 titulações (10 mestrado, 2 doutorado)"><span class="ano__tot">12</span><div class="ano__pilha" style="height:25.5%"><span class="ano__m" style="flex:10"></span><span class="ano__d" style="flex:2"></span></div><span class="ano__rot">08</span></div><div class="ano" title="2009: 18 titulações (13 mestrado, 5 doutorado)"><span class="ano__tot">18</span><div class="ano__pilha" style="height:38.3%"><span class="ano__m" style="flex:13"></span><span class="ano__d" style="flex:5"></span></div><span class="ano__rot">09</span></div><div class="ano" title="2010: 23 titulações (18 mestrado, 5 doutorado)"><span class="ano__tot">23</span><div class="ano__pilha" style="height:48.9%"><span class="ano__m" style="flex:18"></span><span class="ano__d" style="flex:5"></span></div><span class="ano__rot">2010</span></div><div class="ano" title="2011: 27 titulações (19 mestrado, 8 doutorado)"><span class="ano__tot">27</span><div class="ano__pilha" style="height:57.4%"><span class="ano__m" style="flex:19"></span><span class="ano__d" style="flex:8"></span></div><span class="ano__rot">11</span></div><div class="ano" title="2012: 47 titulações (20 mestrado, 27 doutorado)"><span class="ano__tot">47</span><div class="ano__pilha" style="height:100.0%"><span class="ano__m" style="flex:20"></span><span class="ano__d" style="flex:27"></span></div><span class="ano__rot">12</span></div><div class="ano" title="2013: 47 titulações (25 mestrado, 22 doutorado)"><span class="ano__tot">47</span><div class="ano__pilha" style="height:100.0%"><span class="ano__m" style="flex:25"></span><span class="ano__d" style="flex:22"></span></div><span class="ano__rot">13</span></div><div class="ano" title="2014: 29 titulações (12 mestrado, 17 doutorado)"><span class="ano__tot">29</span><div class="ano__pilha" style="height:61.7%"><span class="ano__m" style="flex:12"></span><span class="ano__d" style="flex:17"></span></div><span class="ano__rot">14</span></div><div class="ano" title="2015: 47 titulações (24 mestrado, 23 doutorado)"><span class="ano__tot">47</span><div class="ano__pilha" style="height:100.0%"><span class="ano__m" style="flex:24"></span><span class="ano__d" style="flex:23"></span></div><span class="ano__rot">2015</span></div><div class="ano" title="2016: 29 titulações (14 mestrado, 15 doutorado)"><span class="ano__tot">29</span><div class="ano__pilha" style="height:61.7%"><span class="ano__m" style="flex:14"></span><span class="ano__d" style="flex:15"></span></div><span class="ano__rot">16</span></div><div class="ano" title="2017: 44 titulações (23 mestrado, 21 doutorado)"><span class="ano__tot">44</span><div class="ano__pilha" style="height:93.6%"><span class="ano__m" style="flex:23"></span><span class="ano__d" style="flex:21"></span></div><span class="ano__rot">17</span></div><div class="ano" title="2018: 42 titulações (21 mestrado, 21 doutorado)"><span class="ano__tot">42</span><div class="ano__pilha" style="height:89.4%"><span class="ano__m" style="flex:21"></span><span class="ano__d" style="flex:21"></span></div><span class="ano__rot">18</span></div><div class="ano" title="2019: 35 titulações (21 mestrado, 14 doutorado)"><span class="ano__tot">35</span><div class="ano__pilha" style="height:74.5%"><span class="ano__m" style="flex:21"></span><span class="ano__d" style="flex:14"></span></div><span class="ano__rot">19</span></div><div class="ano" title="2020: 40 titulações (28 mestrado, 12 doutorado)"><span class="ano__tot">40</span><div class="ano__pilha" style="height:85.1%"><span class="ano__m" style="flex:28"></span><span class="ano__d" style="flex:12"></span></div><span class="ano__rot">2020</span></div><div class="ano" title="2021: 23 titulações (8 mestrado, 15 doutorado)"><span class="ano__tot">23</span><div class="ano__pilha" style="height:48.9%"><span class="ano__m" style="flex:8"></span><span class="ano__d" style="flex:15"></span></div><span class="ano__rot">21</span></div><div class="ano" title="2022: 24 titulações (11 mestrado, 13 doutorado)"><span class="ano__tot">24</span><div class="ano__pilha" style="height:51.1%"><span class="ano__m" style="flex:11"></span><span class="ano__d" style="flex:13"></span></div><span class="ano__rot">22</span></div><div class="ano" title="2023: 28 titulações (19 mestrado, 9 doutorado)"><span class="ano__tot">28</span><div class="ano__pilha" style="height:59.6%"><span class="ano__m" style="flex:19"></span><span class="ano__d" style="flex:9"></span></div><span class="ano__rot">23</span></div><div class="ano" title="2024: 21 titulações (8 mestrado, 13 doutorado)"><span class="ano__tot">21</span><div class="ano__pilha" style="height:44.7%"><span class="ano__m" style="flex:8"></span><span class="ano__d" style="flex:13"></span></div><span class="ano__rot">24</span></div><div class="ano" title="2025: 20 titulações (12 mestrado, 8 doutorado)"><span class="ano__tot">20</span><div class="ano__pilha" style="height:42.6%"><span class="ano__m" style="flex:12"></span><span class="ano__d" style="flex:8"></span></div><span class="ano__rot">2025</span></div><div class="ano" title="2026: 16 titulações (12 mestrado, 4 doutorado)"><span class="ano__tot">16</span><div class="ano__pilha" style="height:34.0%"><span class="ano__m" style="flex:12"></span><span class="ano__d" style="flex:4"></span></div><span class="ano__rot">26</span></div></div>
+    <ul class="leg"><li><i style="background:var(--c)"></i>Mestrado<b>338</b></li><li><i style="background:var(--b)"></i>Doutorado<b>255</b></li></ul>
+  </section>
+
+  <div class="grade">
+    <section class="painel" aria-labelledby="t-setor">
+      <h2 id="t-setor">Onde trabalham</h2>
+      <p class="base">Base: 236 egressos com atuação atual identificada (47% do total).</p>
+      <div class="bh"><span class="bh__rot">Docência e pesquisa em instituições de ensino</span><span class="bh__trilho"><span class="bh__barra" style="width:100.0%;background:var(--b)"></span></span><span class="bh__n">92 <small>(39%)</small></span></div><div class="bh"><span class="bh__rot">Setor privado</span><span class="bh__trilho"><span class="bh__barra" style="width:73.9%;background:var(--b)"></span></span><span class="bh__n">68 <small>(29%)</small></span></div><div class="bh"><span class="bh__rot">Em formação (pós-graduação ou pós-doutorado)</span><span class="bh__trilho"><span class="bh__barra" style="width:50.0%;background:var(--b)"></span></span><span class="bh__n">46 <small>(19%)</small></span></div><div class="bh"><span class="bh__rot">Institutos de pesquisa</span><span class="bh__trilho"><span class="bh__barra" style="width:16.3%;background:var(--b)"></span></span><span class="bh__n">15 <small>(6%)</small></span></div><div class="bh"><span class="bh__rot">Setor público</span><span class="bh__trilho"><span class="bh__barra" style="width:13.0%;background:var(--b)"></span></span><span class="bh__n">12 <small>(5%)</small></span></div><div class="bh"><span class="bh__rot">Outros</span><span class="bh__trilho"><span class="bh__barra" style="width:3.3%;background:var(--b)"></span></span><span class="bh__n">3 <small>(1%)</small></span></div>
+    </section>
+
+    <section class="painel" aria-labelledby="t-area">
+      <h2 id="t-area">Atuação na área de formação</h2>
+      <p class="base">Base: 229 egressos que informaram a relação entre o trabalho atual e a formação.</p>
+      <p class="grande">97%</p>
+      <p class="nota">atuam em atividades relacionadas à Ciência do Solo ou às Ciências Agrárias.</p>
+      <div class="bh"><span class="bh__rot">Sim</span><span class="bh__trilho"><span class="bh__barra" style="width:100.0%;background:var(--b)"></span></span><span class="bh__n">223 <small>(97%)</small></span></div><div class="bh"><span class="bh__rot">Parcialmente</span><span class="bh__trilho"><span class="bh__barra" style="width:0.4%;background:var(--b)"></span></span><span class="bh__n">1 <small>(<1%)</small></span></div><div class="bh"><span class="bh__rot">Não</span><span class="bh__trilho"><span class="bh__barra" style="width:2.2%;background:var(--b)"></span></span><span class="bh__n">5 <small>(2%)</small></span></div>
+    </section>
+
+    <section class="painel" aria-labelledby="t-reg">
+      <h2 id="t-reg">Distribuição por região</h2>
+      <p class="base">Base: 230 egressos com cidade de atuação informada.</p>
+      <div class="bh"><span class="bh__rot">Sudeste</span><span class="bh__trilho"><span class="bh__barra" style="width:100.0%;background:var(--b)"></span></span><span class="bh__n">149 <small>(65%)</small></span></div><div class="bh"><span class="bh__rot">Norte</span><span class="bh__trilho"><span class="bh__barra" style="width:14.8%;background:var(--b)"></span></span><span class="bh__n">22 <small>(10%)</small></span></div><div class="bh"><span class="bh__rot">Nordeste</span><span class="bh__trilho"><span class="bh__barra" style="width:16.8%;background:var(--b)"></span></span><span class="bh__n">25 <small>(11%)</small></span></div><div class="bh"><span class="bh__rot">Centro-Oeste</span><span class="bh__trilho"><span class="bh__barra" style="width:14.1%;background:var(--b)"></span></span><span class="bh__n">21 <small>(9%)</small></span></div><div class="bh"><span class="bh__rot">Sul</span><span class="bh__trilho"><span class="bh__barra" style="width:2.7%;background:var(--b)"></span></span><span class="bh__n">4 <small>(2%)</small></span></div><div class="bh"><span class="bh__rot">Exterior</span><span class="bh__trilho"><span class="bh__barra" style="width:6.0%;background:var(--b)"></span></span><span class="bh__n">9 <small>(4%)</small></span></div>
+      <p class="nota">No exterior: Estados Unidos (2), Colômbia, Costa Rica, Moçambique, México, Panamá, Portugal, São Tomé e Príncipe.</p>
+    </section>
+
+    <section class="painel" aria-labelledby="t-uf">
+      <h2 id="t-uf">Estados com mais egressos</h2>
+      <p class="base">Base: 230 egressos com cidade de atuação informada.</p>
+      <div class="bh"><span class="bh__rot">SP</span><span class="bh__trilho"><span class="bh__barra" style="width:100.0%;background:var(--a)"></span></span><span class="bh__n">122 <small>(53%)</small></span></div><div class="bh"><span class="bh__rot">MG</span><span class="bh__trilho"><span class="bh__barra" style="width:18.9%;background:var(--a)"></span></span><span class="bh__n">23 <small>(10%)</small></span></div><div class="bh"><span class="bh__rot">PA</span><span class="bh__trilho"><span class="bh__barra" style="width:12.3%;background:var(--a)"></span></span><span class="bh__n">15 <small>(7%)</small></span></div><div class="bh"><span class="bh__rot">MA</span><span class="bh__trilho"><span class="bh__barra" style="width:11.5%;background:var(--a)"></span></span><span class="bh__n">14 <small>(6%)</small></span></div><div class="bh"><span class="bh__rot">MT</span><span class="bh__trilho"><span class="bh__barra" style="width:7.4%;background:var(--a)"></span></span><span class="bh__n">9 <small>(4%)</small></span></div><div class="bh"><span class="bh__rot">GO</span><span class="bh__trilho"><span class="bh__barra" style="width:5.7%;background:var(--a)"></span></span><span class="bh__n">7 <small>(3%)</small></span></div><div class="bh"><span class="bh__rot">CE</span><span class="bh__trilho"><span class="bh__barra" style="width:4.9%;background:var(--a)"></span></span><span class="bh__n">6 <small>(3%)</small></span></div><div class="bh"><span class="bh__rot">RJ</span><span class="bh__trilho"><span class="bh__barra" style="width:3.3%;background:var(--a)"></span></span><span class="bh__n">4 <small>(2%)</small></span></div><div class="bh"><span class="bh__rot">MS</span><span class="bh__trilho"><span class="bh__barra" style="width:3.3%;background:var(--a)"></span></span><span class="bh__n">4 <small>(2%)</small></span></div><div class="bh"><span class="bh__rot">PR</span><span class="bh__trilho"><span class="bh__barra" style="width:2.5%;background:var(--a)"></span></span><span class="bh__n">3 <small>(1%)</small></span></div>
+    </section>
+
+    <section class="painel" aria-labelledby="t-cid">
+      <h2 id="t-cid">Cidades com mais egressos</h2>
+      <p class="base">Base: 230 egressos com cidade de atuação informada.</p>
+      <div class="bh"><span class="bh__rot">Jaboticabal, SP</span><span class="bh__trilho"><span class="bh__barra" style="width:100.0%;background:var(--a)"></span></span><span class="bh__n">49</span></div><div class="bh"><span class="bh__rot">Ribeirão Preto, SP</span><span class="bh__trilho"><span class="bh__barra" style="width:34.7%;background:var(--a)"></span></span><span class="bh__n">17</span></div><div class="bh"><span class="bh__rot">Uberaba, MG</span><span class="bh__trilho"><span class="bh__barra" style="width:14.3%;background:var(--a)"></span></span><span class="bh__n">7</span></div><div class="bh"><span class="bh__rot">São José do Rio Preto, SP</span><span class="bh__trilho"><span class="bh__barra" style="width:10.2%;background:var(--a)"></span></span><span class="bh__n">5</span></div><div class="bh"><span class="bh__rot">Piracicaba, SP</span><span class="bh__trilho"><span class="bh__barra" style="width:10.2%;background:var(--a)"></span></span><span class="bh__n">5</span></div><div class="bh"><span class="bh__rot">Bebedouro, SP</span><span class="bh__trilho"><span class="bh__barra" style="width:10.2%;background:var(--a)"></span></span><span class="bh__n">5</span></div><div class="bh"><span class="bh__rot">Araraquara, SP</span><span class="bh__trilho"><span class="bh__barra" style="width:8.2%;background:var(--a)"></span></span><span class="bh__n">4</span></div><div class="bh"><span class="bh__rot">Fortaleza, CE</span><span class="bh__trilho"><span class="bh__barra" style="width:8.2%;background:var(--a)"></span></span><span class="bh__n">4</span></div>
+    </section>
+
+    <section class="painel" aria-labelledby="t-fonte">
+      <h2 id="t-fonte">Origem das informações</h2>
+      <p class="base">Situação do levantamento para os 500 egressos.</p>
+      <div class="faixa" role="img" aria-label="41 confirmados pelo egresso, 193 de fontes públicas, 266 somente dados institucionais"><span style="flex:41;background:var(--b)" title="Confirmados pelo egresso: 41"></span><span style="flex:193;background:var(--c)" title="Fontes públicas, a confirmar: 193"></span><span style="flex:266;background:#b9ada3" title="Somente dados institucionais: 266"></span></div>
+      <ul class="leg"><li><i style="background:var(--b)"></i>Confirmados pelo egresso<b>41</b></li><li><i style="background:var(--c)"></i>Fontes públicas, a confirmar<b>193</b></li><li><i style="background:#b9ada3"></i>Somente dados institucionais<b>266</b></li></ul>
+      <p class="nota">Egressos podem confirmar ou atualizar seus dados pelo formulário do programa.</p>
+    </section>
+  </div>
+
+  <div class="met">
+    <h2>Como os indicadores são calculados</h2>
+    <p>As titulações vêm dos registros da Seção Técnica de Pós-Graduação. Atuação, cidade e setor de trabalho foram levantados com os próprios egressos e em fontes públicas, como o currículo Lattes e páginas institucionais. Cada gráfico informa quantos egressos têm aquela informação; quem fez mestrado e doutorado no programa é contado uma vez nos indicadores de atuação.</p>
+  </div>
+</main>
+</body>
+</html>
