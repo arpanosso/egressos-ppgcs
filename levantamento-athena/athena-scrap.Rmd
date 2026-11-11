@@ -1,0 +1,417 @@
+---
+title: "Levantamento de teses e dissertações no catálogo Athena"
+subtitle: "PPGCS – FCAV/Unesp, 1996–2016"
+author: "Alan Rodrigo Panosso"
+date: "`r format(Sys.Date(), '%d/%m/%Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+params:
+  buscar: false   # true = consulta o Athena e salva em dados/; false = só lê o que já foi salvo
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(httr2)
+library(stringr)
+library(readr)
+library(stringdist)
+
+dir.create("dados/brutos",      recursive = TRUE, showWarnings = FALSE)
+dir.create("dados/processados", recursive = TRUE, showWarnings = FALSE)
+```
+
+```{r funcao-extrai, eval=params$buscar}
+pega <- function(d, campo) {
+  v <- unlist(d[[campo]])
+  if (is.null(v)) return(NA_character_)
+  paste(str_remove(v, "\\$\\$Q.*"), collapse = " | ")
+}
+
+extrai_docs <- function(res) {
+  lapply(res$docs, function(doc) {
+    d   <- doc$pnx$display
+    lds <- paste(unlist(d[str_detect(names(d), "^lds")]), collapse = " | ")
+    tibble(
+      mms        = pega(d, "mms"),
+      autor      = pega(d, "creator"),
+      titulo     = pega(d, "title"),
+      ano        = pega(d, "creationdate"),
+      nota       = pega(d, "dissertation"),
+      local      = pega(d, "place"),
+      orientador = str_match(lds, "Orientador(?:\\(a\\)|a)?:\\s*([^|]+)")[, 2],
+      coorient   = str_match(lds, "Co-?orientador(?:\\(a\\)|a)?:\\s*([^|]+)")[, 2],
+      assuntos   = pega(d, "subject"),
+      lds        = lds
+    )
+  }) |> bind_rows()
+}
+```
+```{r funcao-coleta, eval=params$buscar}
+coleta_ano <- function(ano, q = "any,contains,universidade", limit = 50) {
+  pag1  <- buscar_ano(ano, q = q, offset = 0, limit = limit)
+  total <- pag1$info$total
+  paginas <- list(pag1)
+
+  if (total > limit) {
+    for (off in seq(limit, total - 1, by = limit)) {
+      Sys.sleep(1)
+      paginas <- c(paginas, list(buscar_ano(ano, q = q, offset = off, limit = limit)))
+    }
+  }
+
+  saveRDS(paginas, file.path("dados/brutos", paste0("athena_", ano, ".rds")))
+  message(ano, ": ", total, " registros")
+  lapply(paginas, extrai_docs) |> bind_rows()
+}
+
+```
+```{r coleta-completa, eval=params$buscar}
+anos <- 1996:2016
+
+athena <- lapply(anos, coleta_ano) |>
+  bind_rows() |>
+  mutate(jaboticabal = str_detect(paste(nota, local), "Jaboticabal"))
+
+write_csv(athena, "dados/processados/athena_fcav_1996_2016.csv")
+```
+
+Registros encontrados por ano:
+
+```{r resumo-ano}
+athena <- read_csv("dados/processados/athena_fcav_1996_2016.csv",
+                   col_types = cols(mms = col_character(),
+                                    ano = col_character())) |>
+  mutate(
+    nivel = case_when(
+      str_detect(nota, regex("p[oó]s-?doutor", ignore_case = TRUE))  ~ "Pós-doutorado",
+      str_detect(nota, regex("doutor", ignore_case = TRUE))          ~ "Doutorado",
+      str_detect(nota, regex("mestr|^disserta", ignore_case = TRUE)) ~ "Mestrado",
+      TRUE                                                           ~ NA_character_
+    ),
+    jaboticabal_antigo = jaboticabal,
+    jaboticabal = str_detect(
+      paste(nota, local),
+      regex("jaboticabal|ci[eê]ncias agr[aá]rias e veterin", ignore_case = TRUE)
+    )
+  )
+
+athena |>
+  group_by(ano) |>
+  summarise(total       = n(),
+            distintos   = n_distinct(mms),
+            jaboticabal = sum(jaboticabal, na.rm = TRUE)) |>
+  knitr::kable()
+```
+
+# Objetivo
+
+Construir, a partir do catálogo Athena da Unesp, uma lista independente das
+teses e dissertações defendidas na FCAV entre 1996 e 2016, para comparar com o
+levantamento de egressos do PPGCS feito a partir do Repositório Institucional.
+
+# Fonte dos dados
+
+O Athena funciona sobre o Primo VE, da Ex Libris. A busca é feita pela mesma
+interface de dados que o navegador usa, com um token de acesso de visitante.
+
+# Teste de acesso ao catálogo
+
+```{r token, eval=params$buscar}
+base <- "https://unesp.primo.exlibrisgroup.com/primaws/rest/pub"
+inst <- "55UNESP_INST"
+vid  <- "55UNESP_INST:UNESP"
+
+resp <- request(base) |>
+  req_url_path_append("institution", inst, "guestJwt") |>
+  req_url_query(isGuest = "true", lang = "pt", viewId = vid) |>
+  req_perform()
+
+token <- gsub('"', "", resp_body_string(resp))
+
+resp_status(resp)
+nchar(token)
+```
+
+# Busca por ano
+
+Filtros usados: biblioteca da FCAV, tipo de recurso teses e dissertações,
+um ano de cada vez.
+
+```{r funcao-busca, eval=params$buscar}
+biblioteca_fcav <- "6341\u2013112077920006341"  # \u2013 é o travessão
+
+buscar_ano <- function(
+    ano, 
+    q = "any,contains,solo", 
+    offset = 0, 
+    limit = 50) {
+  facetas <- paste(
+    "facet_rtype,include,dissertations",
+    "facet_rtype,include,theses",
+    paste0("facet_library,include,", biblioteca_fcav),
+    sep = "|,|"
+  )
+  request(base) |>
+    req_url_path_append("pnxs") |>
+    req_url_query(
+      q = q, offset = offset, limit = limit,
+      multiFacets = facetas,
+      qInclude = paste0("facet_searchcreationdate,exact,[", ano, " TO ", ano, "]"),
+      inst = inst, vid = vid, lang = "pt",
+      scope = "MyInst_and_CI", tab = "Everything", sort = "title",
+      skipDelivery = "Y", pcAvailability = "false", rtaLinks = "false",
+      getMore = 0, disableCache = "false", rapido = "false"
+    ) |>
+    req_headers(Authorization = paste("Bearer", token)) |>
+    req_perform() |>
+    resp_body_json()
+}
+
+# buscando informações
+teste <- buscar_ano(2005)
+teste$info$total
+buscar_ano(2005, q = "any,contains,*")$info$total
+buscar_ano(2005, q = "any,contains,universidade")$info$total
+buscar_ano(2005, q = "any,contains,jaboticabal")$info$total
+
+# Rodar com universidade e só depois filtrar para jaboticabal
+teste <- buscar_ano(
+  2005, 
+  q = "any,contains,universidade", 
+  limit = 3)
+d <- teste$docs[[1]]$pnx$display
+names(d)
+str(d, max.level = 2)
+```
+
+# Limpeza e padronização
+
+A coleta traz teses e dissertações de todos os programas da FCAV e também
+trabalhos de outras instituições guardados na biblioteca. As etapas de limpeza
+foram:
+
+- **Campus**: mantidos os registros cuja nota de tese ou local de publicação
+  menciona Jaboticabal ou a Faculdade de Ciências Agrárias e Veterinárias. Até
+  2005, cerca de metade do acervo de teses da biblioteca era de outras
+  instituições.
+- **Nível**: classificado a partir da nota de tese, que tem variações de
+  digitação ("Mestrado", "mestradodo"). Dois relatórios de pós-doutorado
+  foram separados e excluídos.
+- **Identificador**: o código do registro (`mms`, 18 dígitos) é lido como texto,
+  porque como número perderia os últimos algarismos.
+- **Nomes**: acentos, maiúsculas, títulos ("Prof.", "Dr.") e pontuação final
+  são removidos antes de comparar nomes, porque o mesmo orientador aparece com
+  grafias diferentes ao longo de 20 anos de catalogação.
+
+```{r limpeza}
+athena <- athena |>
+  mutate(
+    nivel = case_when(
+      str_detect(nota, regex("p[oó]s-?doutor", ignore_case = TRUE))  ~ "Pós-doutorado",
+      str_detect(nota, regex("doutor", ignore_case = TRUE))          ~ "Doutorado",
+      str_detect(nota, regex("mestr|^disserta", ignore_case = TRUE)) ~ "Mestrado",
+      TRUE                                                           ~ NA_character_
+    ),
+    jaboticabal = str_detect(
+      paste(nota, local),
+      regex("jaboticabal|ci[eê]ncias agr[aá]rias e veterin", ignore_case = TRUE)
+    )
+  )
+
+base_ppg <- athena |>
+  filter(jaboticabal, nivel %in% c("Mestrado", "Doutorado"))
+
+normaliza <- function(x) {
+  x |>
+    stringi::stri_trans_general("Latin-ASCII") |>
+    str_to_lower() |>
+    str_remove_all("\\b(profa?|dra?)\\.?\\s") |>
+    str_remove("[.;,\\s]+$") |>
+    str_squish()
+}
+
+athena |> count(jaboticabal, nivel) |> knitr::kable()
+```
+
+# Triagem dos orientadores
+
+```{r orientadores}
+base_ppg <- athena |>
+  filter(jaboticabal, nivel %in% c("Mestrado", "Doutorado"))
+
+normaliza <- function(x) {
+  x |>
+    stringi::stri_trans_general("Latin-ASCII") |>
+    str_to_lower() |>
+    str_remove_all("\\b(profa?|dra?)\\.?\\s") |>
+    str_remove("[.;,\\s]+$") |>
+    str_squish()
+}
+
+base_ppg |>
+  summarise(trabalhos      = n(),
+            sem_orientador = sum(is.na(orientador)),
+            cita_cs        = sum(str_detect(paste(nota, lds),
+                                 regex("ci[eê]ncia do solo", ignore_case = TRUE))))
+
+orientadores <- base_ppg |>
+  filter(!is.na(orientador)) |>
+  mutate(orient_norm = normaliza(orientador)) |>
+  group_by(orient_norm) |>
+  summarise(grafia    = first(orientador),
+            trabalhos = n(),
+            mestrado  = sum(nivel == "Mestrado"),
+            doutorado = sum(nivel == "Doutorado"),
+            primeiro  = min(ano),
+            ultimo    = max(ano)) |>
+  arrange(desc(trabalhos))
+```
+
+```{r semente}
+library(readxl)
+
+lista <- read_excel("privado/egressos-agronomia-CS-2026.xls", sheet = "Planilha1")
+
+semente <- lista |>
+  filter(!is.na(ORIENTADOR)) |>
+  mutate(orient_norm = normaliza(ORIENTADOR)) |>
+  count(orient_norm, name = "egressos_lista")
+
+d_sem   <- stringdistmatrix(semente$orient_norm, orientadores$orient_norm, method = "jw")
+corresp <- which(d_sem < 0.1, arr.ind = TRUE)
+
+casamentos <- tibble(
+  semente   = semente$orient_norm[corresp[, 1]],
+  athena    = orientadores$orient_norm[corresp[, 2]],
+  dist      = round(d_sem[corresp], 3),
+  trabalhos = orientadores$trabalhos[corresp[, 2]]
+) |>
+  arrange(semente, dist)
+```
+```{r candidatos}
+orient_ppgcs <- unique(casamentos$athena)
+
+termos_solo <- regex(paste0(
+  "\\bsolos?\\b|adub|fertilidade do solo|fertilizante|calag|calc[aá]rio|gesso|",
+  "nutri[cç][aã]o (mineral|de plantas)|mat[eé]ria org[aâ]nica|",
+  "latossolo|argissolo|nitossolo|eros[aã]o|compacta|geoestat|",
+  "variabilidade espacial|pedol|micronutri|macronutri|irriga|bacia hidrogr"
+), ignore_case = TRUE)
+
+base_ppg <- base_ppg |>
+  mutate(orient_norm = normaliza(orientador),
+         semente     = orient_norm %in% orient_ppgcs,
+         tema_solo   = str_detect(paste(titulo, assuntos), termos_solo))
+
+ranking <- base_ppg |>
+  filter(!is.na(orientador), !semente) |>
+  group_by(orient_norm) |>
+  summarise(trabalhos = n(),
+            com_solo  = sum(tema_solo),
+            proporcao = round(mean(tema_solo), 2)) |>
+  filter(com_solo > 0) |>
+  arrange(desc(com_solo))
+
+triagem <- base_ppg |>
+  filter(!is.na(orientador), !semente, tema_solo) |>
+  group_by(orient_norm) |>
+  summarise(grafia   = first(orientador),
+            com_solo = n(),
+            periodo  = paste(min(ano), max(ano), sep = "-"),
+            exemplos = paste(head(titulo, 3), collapse = " || ")) |>
+  arrange(desc(com_solo)) |>
+  mutate(ppgcs = "")
+
+write_excel_csv2(triagem, "dados/triagem_orientadores.csv")
+```
+
+
+```{r}
+# install.packages("capesR")
+library(capesR)
+# capes_files <- download_capes_data(1996:2016, destination = "dados/capes")
+# 
+# capes_sp <- read_capes_data(capes_files, list(uf = "SP"))
+# glimpse(capes_sp)
+```
+
+
+# Lista oficial da CAPES
+
+Dados do Catálogo de Teses e Dissertações da CAPES, obtidos pelo pacote
+capesR. O programa aparece com três registros ao longo do tempo:
+"Ciências do Solo" (1999–2007) e "Ciência do Solo" (2008–2016), com e sem o
+campus no nome da instituição.
+
+```{r capes-coleta, eval=params$buscar}
+library(capesR)
+
+capes_files <- download_capes_data(1996:2016, destination = "dados/capes")
+
+capes_ppgcs <- read_capes_data(capes_files, list(uf = "SP")) |>
+  filter(str_detect(ies, "MESQUITA"),
+         str_detect(nome_programa, regex("solo", ignore_case = TRUE))) |>
+  mutate(nivel = if_else(tipo %in% c("Doutorado", "TESE"), "Doutorado", "Mestrado")) |>
+  select(ano_base, nivel, autoria, orientacao, titulo, ies, nome_programa)
+
+write_csv(capes_ppgcs, "dados/processados/capes_ppgcs_1999_2016.csv")
+```
+
+```{r capes-resumo}
+capes_ppgcs <- read_csv("dados/processados/capes_ppgcs_1999_2016.csv",
+                        show_col_types = FALSE)
+
+capes_ppgcs |>
+  count(ano_base, nivel) |>
+  tidyr::pivot_wider(names_from = nivel, values_from = n, values_fill = 0) |>
+  knitr::kable()
+```
+
+# Comparação com o levantamento de egressos
+
+```{r comparacao-capes}
+lista_norm <- lista |>
+  filter(!is.na(DISCENTE)) |>
+  mutate(nome_norm = normaliza(DISCENTE))
+
+capes_ppgcs <- capes_ppgcs |>
+  mutate(nome_norm = normaliza(autoria))
+
+d_aut <- stringdistmatrix(capes_ppgcs$nome_norm, lista_norm$nome_norm, method = "jw")
+
+capes_ppgcs <- capes_ppgcs |>
+  mutate(
+    parecido = lista_norm$nome_norm[apply(d_aut, 1, which.min)],
+    dist     = round(apply(d_aut, 1, min), 3),
+    status   = case_when(dist == 0   ~ "na lista",
+                         dist < 0.1  ~ "na lista (grafia diferente)",
+                         TRUE        ~ "fora da lista")
+  )
+
+mesma_pessoa <- c("pamela jose alves",
+                  "danilo almeida do carmo",
+                  "anelisa de aquino vidal",
+                  "mayra cristina teixeira caetano")
+
+capes_ppgcs <- capes_ppgcs |>
+  mutate(status = if_else(nome_norm %in% mesma_pessoa,
+                          "na lista (grafia diferente)", status))
+
+novos_capes <- capes_ppgcs |>
+  filter(status == "fora da lista") |>
+  arrange(ano_base, autoria) |>
+  select(ano_base, nivel, autoria, orientacao, titulo)
+
+write_excel_csv2(novos_capes, "dados/processados/egressos_capes_nao_levantados.csv")
+
+c(trabalhos = nrow(novos_capes), pessoas = n_distinct(novos_capes$autoria))
+```
+
+---
+
+*Busca executada neste knit:* `r params$buscar`
