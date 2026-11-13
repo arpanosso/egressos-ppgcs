@@ -1927,6 +1927,7 @@ casamentos &lt;- tibble(
   trabalhos = orientadores$trabalhos[corresp[, 2]]
 ) |&gt;
   arrange(semente, dist)</code></pre>
+<p>]</p>
 <pre class="r"><code>orient_ppgcs &lt;- unique(casamentos$athena)
 
 termos_solo &lt;- regex(paste0(
@@ -1960,13 +1961,41 @@ triagem &lt;- base_ppg |&gt;
   arrange(desc(com_solo)) |&gt;
   mutate(ppgcs = &quot;&quot;)
 
-write_excel_csv2(triagem, &quot;dados/triagem_orientadores.csv&quot;)</code></pre>
+if (!file.exists(&quot;dados/triagem_orientadores.csv&quot;)) {
+  write_excel_csv2(triagem, &quot;dados/triagem_orientadores.csv&quot;)
+}</code></pre>
+<pre class="r"><code>orient_capes &lt;- read_csv(&quot;dados/processados/capes_ppgcs_1999_2016.csv&quot;,
+                         show_col_types = FALSE) |&gt;
+  filter(!is.na(orientacao)) |&gt;
+  distinct(orient_norm = normaliza(orientacao))
+
+triagem &lt;- read_csv2(&quot;dados/triagem_orientadores.csv&quot;, show_col_types = FALSE)
+
+d_or &lt;- stringdistmatrix(triagem$orient_norm, orient_capes$orient_norm, method = &quot;jw&quot;)
+
+triagem &lt;- triagem |&gt;
+  mutate(dist_capes = round(apply(d_or, 1, min), 3),
+         na_capes   = dist_capes &lt; 0.1)</code></pre>
 <pre class="r"><code># install.packages(&quot;capesR&quot;)
 library(capesR)
-# capes_files &lt;- download_capes_data(1996:2016, destination = &quot;dados/capes&quot;)
-# 
-# capes_sp &lt;- read_capes_data(capes_files, list(uf = &quot;SP&quot;))
-# glimpse(capes_sp)</code></pre>
+capes_files &lt;- download_capes_data(1996:2016, destination = &quot;dados/capes&quot;)
+
+capes_sp &lt;- read_capes_data(capes_files, list(uf = &quot;SP&quot;))
+glimpse(capes_sp)</code></pre>
+<pre><code>## Rows: 296,319
+## Columns: 12
+## $ ano_base      &lt;dbl&gt; 1996, 1996, 1996, 1996, 1996, 1996, 1996, 1996, 1996, 19…
+## $ ies           &lt;chr&gt; &quot;UNIVERSIDADE FEDERAL DE SÃO CARLOS&quot;, &quot;UNIVERSIDADE FEDE…
+## $ area          &lt;chr&gt; &quot;FÍSICA&quot;, &quot;FÍSICA&quot;, &quot;FÍSICA&quot;, &quot;FÍSICA&quot;, &quot;FÍSICA&quot;, &quot;FÍSIC…
+## $ nome_programa &lt;chr&gt; &quot;FÍSICA&quot;, &quot;FÍSICA&quot;, &quot;FÍSICA&quot;, &quot;FÍSICA&quot;, &quot;FÍSICA&quot;, &quot;FÍSIC…
+## $ tipo          &lt;chr&gt; &quot;Mestrado&quot;, &quot;Mestrado&quot;, &quot;Doutorado&quot;, &quot;Doutorado&quot;, &quot;Douto…
+## $ titulo        &lt;chr&gt; &quot;Uma formulação algébrica para os modelos SU(N)l- minima…
+## $ resumo        &lt;chr&gt; &quot;Através do uso da álgebra de troca em uma teoria de cam…
+## $ idioma        &lt;chr&gt; &quot;Português&quot;, &quot;Português&quot;, &quot;Português&quot;, &quot;Português&quot;, &quot;Por…
+## $ autoria       &lt;chr&gt; &quot;WAGNER UTIEL SILVA&quot;, &quot;ANTONIO XAVIER GIL&quot;, &quot;ADILSON JES…
+## $ orientacao    &lt;chr&gt; &quot;ANTONIO LIMA SANTOS&quot;, &quot;HIDEMBERGUE ORDOZGOITH DA FROTA&quot;…
+## $ regiao        &lt;chr&gt; &quot;SUDESTE&quot;, &quot;SUDESTE&quot;, &quot;SUDESTE&quot;, &quot;SUDESTE&quot;, &quot;SUDESTE&quot;, &quot;…
+## $ uf            &lt;chr&gt; &quot;SP&quot;, &quot;SP&quot;, &quot;SP&quot;, &quot;SP&quot;, &quot;SP&quot;, &quot;SP&quot;, &quot;SP&quot;, &quot;SP&quot;, &quot;SP&quot;, &quot;S…</code></pre>
 </div>
 <div id="lista-oficial-da-capes" class="section level1" number="7">
 <h1><span class="header-section-number">7</span> Lista oficial da
@@ -1975,15 +2004,21 @@ CAPES</h1>
 pacote capesR. O programa aparece com três registros ao longo do tempo:
 “Ciências do Solo” (1999–2007) e “Ciência do Solo” (2008–2016), com e
 sem o campus no nome da instituição.</p>
-<pre class="r"><code>library(capesR)
+<pre class="r"><code>capes_jab &lt;- read_capes_data(capes_files, list(uf = &quot;SP&quot;)) |&gt;
+  filter(str_detect(ies, &quot;JABOTICAB|MESQUITA FILHO$&quot;)) |&gt;
+  select(ano_base, tipo, autoria, nome_programa)
 
-capes_files &lt;- download_capes_data(1996:2016, destination = &quot;dados/capes&quot;)
+write_csv(capes_jab, &quot;dados/processados/capes_jaboticabal_todos_programas.csv&quot;)
 
 capes_ppgcs &lt;- read_capes_data(capes_files, list(uf = &quot;SP&quot;)) |&gt;
   filter(str_detect(ies, &quot;MESQUITA&quot;),
          str_detect(nome_programa, regex(&quot;solo&quot;, ignore_case = TRUE))) |&gt;
   mutate(nivel = if_else(tipo %in% c(&quot;Doutorado&quot;, &quot;TESE&quot;), &quot;Doutorado&quot;, &quot;Mestrado&quot;)) |&gt;
   select(ano_base, nivel, autoria, orientacao, titulo, ies, nome_programa)
+
+capes_jab &lt;- read_capes_data(capes_files, list(uf = &quot;SP&quot;)) |&gt;
+  filter(str_detect(ies, &quot;JABOTICAB|MESQUITA FILHO$&quot;)) |&gt;
+  select(ano_base, tipo, autoria, nome_programa)
 
 write_csv(capes_ppgcs, &quot;dados/processados/capes_ppgcs_1999_2016.csv&quot;)</code></pre>
 <pre class="r"><code>capes_ppgcs &lt;- read_csv(&quot;dados/processados/capes_ppgcs_1999_2016.csv&quot;,
@@ -2135,6 +2170,378 @@ write_excel_csv2(novos_capes, &quot;dados/processados/egressos_capes_nao_levanta
 c(trabalhos = nrow(novos_capes), pessoas = n_distinct(novos_capes$autoria))</code></pre>
 <pre><code>## trabalhos   pessoas 
 ##        48        47</code></pre>
+<pre class="r"><code>orient_athena &lt;- c(orient_ppgcs, triagem$orient_norm[triagem$na_capes])
+
+d_falta &lt;- stringdistmatrix(orient_capes$orient_norm, orient_athena, method = &quot;jw&quot;)
+
+orient_capes |&gt;
+  mutate(dist = round(apply(d_falta, 1, min), 3)) |&gt;
+  filter(dist &gt;= 0.1)</code></pre>
+<pre><code>## # A tibble: 2 × 2
+##   orient_norm               dist
+##   &lt;chr&gt;                    &lt;dbl&gt;
+## 1 vicente de paula pereira 0.279
+## 2 luiz roberto lopes       0.335</code></pre>
+<pre class="r"><code>capes_ppgcs |&gt;
+  filter(str_detect(normaliza(orientacao), &quot;vicente de paula pereira|luiz roberto lopes&quot;)) |&gt;
+  select(ano_base, nivel, autoria, orientacao) |&gt;
+  as.data.frame()</code></pre>
+<pre><code>##   ano_base    nivel                   autoria               orientacao
+## 1     2000 Mestrado            PAULO NOBUKUNI VICENTE DE PAULA PEREIRA
+## 2     2001 Mestrado LUIZ CARLOS VIANNA JÚNIOR       LUIZ ROBERTO LOPES</code></pre>
+<pre class="r"><code>athena |&gt;
+  filter(str_detect(normaliza(autor), &quot;nobukuni|vianna&quot;)) |&gt;
+  select(ano, autor, orientador, nota, jaboticabal) |&gt;
+  as.data.frame()</code></pre>
+<pre><code>##    ano                          autor                              orientador
+## 1 1999     Vianna, Verônica Oliveira.                      Augusto Shinya Abe
+## 2 2000               Nobukuni, Paulo.                Vicente de Paula Pereira
+## 3 2001    Vianna Júnior, Luiz Carlos.                      Luiz Roberto Lopes
+## 4 2002  Costa e Silva, Eliane Vianna. Mateus José Rodrigues Paranhos da Costa
+## 5 2007 Corrêa da Silva, Paula Vianna.                   Jeffrey Frederico Lui
+## 6 2013       Vianna, Viviane Formice.           Sandra Helena Unêda-Trevisoli
+##                                                                                                                                        nota
+## 1                                                                  Tese (doutorado) - Universidade Estadual Paulista, Centro de Aqüicultura
+## 2                                    Dissertação (mestrado) - Universidade Estadual Paulista, Faculdade de Ciências Agrárias e Veterinárias
+## 3                                    Dissertação (mestrado) - Universidade Estadual Paulista, Faculdade de Ciências Agrárias e Veterinárias
+## 4                                          Tese (doutorado) - Universidade Estadual Paulista, Faculdade de Ciências Agrárias e Veterinárias
+## 5                                    Dissertação (mestrado) - Universidade Estadual Paulista, Faculdade de Ciências Agrárias e Veterinárias
+## 6 Tese (doutorado) - Universidade Estadual Paulista &quot;Júlio de Mesquita Filho&quot;, Faculdade de Ciências Agrárias e Veterinárias de Jaboticabal
+##   jaboticabal
+## 1        TRUE
+## 2        TRUE
+## 3        TRUE
+## 4        TRUE
+## 5        TRUE
+## 6        TRUE</code></pre>
+<pre class="r"><code>inverte &lt;- function(x) {
+  x &lt;- str_remove(str_trim(x), &quot;\\.$&quot;)
+  ifelse(str_detect(x, &quot;,&quot;),
+         paste(str_trim(str_replace(x, &quot;^[^,]*,&quot;, &quot;&quot;)), str_extract(x, &quot;^[^,]*&quot;)),
+         x)
+}
+
+d_fin &lt;- stringdistmatrix(orientadores$orient_norm, orient_capes$orient_norm, method = &quot;jw&quot;)
+orient_ppgcs_final &lt;- orientadores$orient_norm[apply(d_fin, 1, min) &lt; 0.1]
+
+athena_ppgcs &lt;- base_ppg |&gt;
+  mutate(orient_norm = normaliza(orientador)) |&gt;
+  filter(orient_norm %in% orient_ppgcs_final, as.numeric(ano) &gt;= 1999) |&gt;
+  mutate(autor_norm = normaliza(inverte(autor)))
+
+nrow(athena_ppgcs)</code></pre>
+<pre><code>## [1] 628</code></pre>
+<pre class="r"><code>head(athena_ppgcs$autor_norm, 5)</code></pre>
+<pre><code>## [1] &quot;mirela moraes waldemarin&quot;   &quot;luciana teruni sanomiya&quot;   
+## [3] &quot;luiz carlos pizetta&quot;        &quot;anisio jose diniz&quot;         
+## [5] &quot;paulo roberto silva farias&quot;</code></pre>
+<pre class="r"><code>capes_jab &lt;- read_csv(&quot;dados/processados/capes_jaboticabal_todos_programas.csv&quot;)
+
+d_a_capes &lt;- stringdistmatrix(athena_ppgcs$autor_norm, unique(capes_ppgcs$nome_norm), method = &quot;jw&quot;)
+d_a_lista &lt;- stringdistmatrix(athena_ppgcs$autor_norm, lista_norm$nome_norm, method = &quot;jw&quot;)
+
+athena_ppgcs &lt;- athena_ppgcs |&gt;
+  mutate(na_capes = apply(d_a_capes, 1, min) &lt; 0.1,
+         na_lista = apply(d_a_lista, 1, min) &lt; 0.1)
+
+athena_ppgcs |&gt; count(na_capes, na_lista)</code></pre>
+<pre><code>## # A tibble: 4 × 3
+##   na_capes na_lista     n
+##   &lt;lgl&gt;    &lt;lgl&gt;    &lt;int&gt;
+## 1 FALSE    FALSE      238
+## 2 FALSE    TRUE         6
+## 3 TRUE     FALSE       60
+## 4 TRUE     TRUE       324</code></pre>
+<pre class="r"><code>procurar &lt;- c(&quot;luis gustavo teixeira&quot;, &quot;marcio silveira da silva&quot;,
+              &quot;lucas aguilar cortez&quot;, &quot;miqueias gomes dos santos&quot;,
+              &quot;renata cristina araujo costa&quot;)
+
+
+capes_jab |&gt;
+  mutate(nome_norm = normaliza(autoria)) |&gt;
+  filter(nome_norm %in% procurar) |&gt;
+  select(ano_base, tipo, autoria, nome_programa) |&gt;
+  as.data.frame()</code></pre>
+<pre><code>##   ano_base        tipo                      autoria
+## 1     2010    Mestrado        LUÍS GUSTAVO TEIXEIRA
+## 2     2013 DISSERTAÇÃO     MARCIO SILVEIRA DA SILVA
+## 3     2013 DISSERTAÇÃO         LUCAS AGUILAR CORTEZ
+## 4     2015 DISSERTAÇÃO    MIQUEIAS GOMES DOS SANTOS
+## 5     2015 DISSERTAÇÃO RENATA CRISTINA ARAUJO COSTA
+##                  nome_programa
+## 1 AGRONOMIA (PRODUÇÃO VEGETAL)
+## 2 AGRONOMIA (PRODUÇÃO VEGETAL)
+## 3 AGRONOMIA (PRODUÇÃO VEGETAL)
+## 4 AGRONOMIA (PRODUÇÃO VEGETAL)
+## 5 AGRONOMIA (PRODUÇÃO VEGETAL)</code></pre>
+<pre class="r"><code>link_athena &lt;- function(mms) {
+  paste0(&quot;https://unesp.primo.exlibrisgroup.com/discovery/fulldisplay?docid=alma&quot;,
+         mms, &quot;&amp;vid=55UNESP_INST:UNESP&quot;)
+}
+
+athena_ppgcs &lt;- athena_ppgcs |&gt; mutate(link = link_athena(mms))
+
+novos &lt;- novos_capes |&gt;
+  mutate(nome_norm = normaliza(autoria), fonte = &quot;CAPES&quot;)
+
+d_n &lt;- stringdistmatrix(novos$nome_norm, athena_ppgcs$autor_norm, method = &quot;jw&quot;)
+d_n[outer(novos$nivel, athena_ppgcs$nivel, &quot;!=&quot;)] &lt;- 1
+
+novos &lt;- novos |&gt;
+  mutate(d    = apply(d_n, 1, min),
+         link = if_else(d &lt; 0.15, athena_ppgcs$link[apply(d_n, 1, which.min)], NA_character_)) |&gt;
+  select(-d)
+
+so_athena &lt;- athena_ppgcs |&gt;
+  filter(autor_norm == &quot;conceicao lopes&quot;) |&gt;
+  transmute(ano_base = as.numeric(ano), nivel, autoria = inverte(autor),
+            orientacao = orientador, titulo, nome_norm = autor_norm,
+            fonte = &quot;Athena&quot;, link)
+
+novos &lt;- bind_rows(novos, so_athena) |&gt; arrange(ano_base, autoria)
+
+write_excel_csv2(novos, &quot;dados/processados/egressos_nao_levantados_final.csv&quot;)
+
+c(egressos = n_distinct(novos$nome_norm), trabalhos = nrow(novos),
+  com_link = sum(!is.na(novos$link)))</code></pre>
+<pre><code>##  egressos trabalhos  com_link 
+##        48        49        47</code></pre>
+<pre class="r"><code>novos |&gt; filter(is.na(link)) |&gt; select(ano_base, nivel, autoria, orientacao)</code></pre>
+<pre><code>## # A tibble: 2 × 4
+##   ano_base nivel    autoria                         orientacao                
+##      &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;                           &lt;chr&gt;                     
+## 1     2000 Mestrado ADRIANA APARECIDA RIBON PINOTTI JOSÉ FREDERICO CENTURION  
+## 2     2001 Mestrado MARISTELA A. CHIMELLO           EDSON LUIZ MENDES COUTINHO</code></pre>
+<pre class="r"><code>athena_ppgcs |&gt;
+  filter(str_detect(autor_norm, &quot;ribon|chimello&quot;)) |&gt;
+  select(ano, nivel, autor_norm, mms)</code></pre>
+<pre><code>## # A tibble: 2 × 4
+##   ano   nivel     autor_norm                   mms               
+##   &lt;chr&gt; &lt;chr&gt;     &lt;chr&gt;                        &lt;chr&gt;             
+## 1 2001  Mestrado  maristela aparecida chimello 990001411680206341
+## 2 2004  Doutorado helio de rezende triboni     990002276410206341</code></pre>
+<pre class="r"><code>athena |&gt;
+  filter(str_detect(normaliza(autor), &quot;^ribon&quot;)) |&gt;
+  select(ano, autor, orientador, mms)</code></pre>
+<pre><code>## # A tibble: 1 × 4
+##   ano   autor                     orientador                               mms  
+##   &lt;chr&gt; &lt;chr&gt;                     &lt;chr&gt;                                    &lt;chr&gt;
+## 1 2000  Ribon, Adriana Aparecida. José Frederico Centurion, Maria Apareci… 9900…</code></pre>
+<pre class="r"><code>links_manuais &lt;- c(&quot;MARISTELA A. CHIMELLO&quot;            = &quot;990001411680206341&quot;,
+                   &quot;ADRIANA APARECIDA RIBON PINOTTI&quot;  = &quot;990001439720206341&quot;)
+
+novos &lt;- novos |&gt;
+  mutate(link = if_else(autoria %in% names(links_manuais),
+                        link_athena(links_manuais[autoria]), link))
+
+padrao &lt;- paste(orient_capes$orient_norm, collapse = &quot;|&quot;)
+
+escondidos &lt;- base_ppg |&gt;
+  mutate(orient_norm = normaliza(orientador)) |&gt;
+  filter(!orient_norm %in% orient_ppgcs_final,
+         str_detect(orient_norm, padrao),
+         as.numeric(ano) &gt;= 1999) |&gt;
+  mutate(autor_norm = normaliza(inverte(autor)))
+
+nrow(escondidos)</code></pre>
+<pre><code>## [1] 1</code></pre>
+<pre class="r"><code>escondidos |&gt; select(ano, nivel, autor_norm, orientador)</code></pre>
+<pre><code>## # A tibble: 1 × 4
+##   ano   nivel    autor_norm              orientador                             
+##   &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;                   &lt;chr&gt;                                  
+## 1 2000  Mestrado adriana aparecida ribon José Frederico Centurion, Maria Aparec…</code></pre>
+<pre class="r"><code>inverte &lt;- function(x) {
+  x &lt;- str_remove(str_trim(x), &quot;\\.$&quot;)
+  ifelse(str_detect(x, &quot;,&quot;),
+         paste(str_trim(str_replace(x, &quot;^[^,]*,&quot;, &quot;&quot;)), str_extract(x, &quot;^[^,]*&quot;)),
+         x)
+}
+
+d_fin &lt;- stringdistmatrix(orientadores$orient_norm, orient_capes$orient_norm, method = &quot;jw&quot;)
+orient_ppgcs_final &lt;- orientadores$orient_norm[apply(d_fin, 1, min) &lt; 0.1]
+
+athena_ppgcs &lt;- base_ppg |&gt;
+  mutate(orient_norm = normaliza(orientador)) |&gt;
+  filter(orient_norm %in% orient_ppgcs_final, as.numeric(ano) &gt;= 1999) |&gt;
+  mutate(autor_norm = normaliza(inverte(autor)))
+
+d_a_capes &lt;- stringdistmatrix(athena_ppgcs$autor_norm, unique(capes_ppgcs$nome_norm), method = &quot;jw&quot;)
+d_a_lista &lt;- stringdistmatrix(athena_ppgcs$autor_norm, lista_norm$nome_norm, method = &quot;jw&quot;)
+
+athena_ppgcs &lt;- athena_ppgcs |&gt;
+  mutate(na_capes = apply(d_a_capes, 1, min) &lt; 0.1,
+         na_lista = apply(d_a_lista, 1, min) &lt; 0.1)
+
+athena_ppgcs |&gt; count(na_capes, na_lista) |&gt; knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">na_capes</th>
+<th align="left">na_lista</th>
+<th align="right">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">FALSE</td>
+<td align="left">FALSE</td>
+<td align="right">238</td>
+</tr>
+<tr class="even">
+<td align="left">FALSE</td>
+<td align="left">TRUE</td>
+<td align="right">6</td>
+</tr>
+<tr class="odd">
+<td align="left">TRUE</td>
+<td align="left">FALSE</td>
+<td align="right">60</td>
+</tr>
+<tr class="even">
+<td align="left">TRUE</td>
+<td align="left">TRUE</td>
+<td align="right">324</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>capes_jab &lt;- read_csv(&quot;dados/processados/capes_jaboticabal_todos_programas.csv&quot;,
+                      show_col_types = FALSE) |&gt;
+  mutate(nome_norm = normaliza(autoria))
+
+fora &lt;- athena_ppgcs |&gt; filter(!na_capes, !na_lista)
+d_f  &lt;- stringdistmatrix(fora$autor_norm, capes_jab$nome_norm, method = &quot;jw&quot;)
+
+fora &lt;- fora |&gt;
+  mutate(dist     = apply(d_f, 1, min),
+         programa = if_else(dist &lt; 0.1, capes_jab$nome_programa[apply(d_f, 1, which.min)],
+                            NA_character_))
+
+fora |&gt; count(programa, sort = TRUE) |&gt; knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">programa</th>
+<th align="right">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">AGRONOMIA (PRODUÇÃO VEGETAL)</td>
+<td align="right">186</td>
+</tr>
+<tr class="even">
+<td align="left">AGRONOMIA (ENTOMOLOGIA AGRÍCOLA)</td>
+<td align="right">12</td>
+</tr>
+<tr class="odd">
+<td align="left">MICROBIOLOGIA</td>
+<td align="right">8</td>
+</tr>
+<tr class="even">
+<td align="left">MICROBIOLOGIA AGROPECUÁRIA</td>
+<td align="right">7</td>
+</tr>
+<tr class="odd">
+<td align="left">NA</td>
+<td align="right">7</td>
+</tr>
+<tr class="even">
+<td align="left">AGRONOMIA (PRODUCAO VEGETAL)</td>
+<td align="right">5</td>
+</tr>
+<tr class="odd">
+<td align="left">AGRONOMIA (PRODUÇÃO E TECNOLOGIA DE SEMENTES)</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">AGRONOMIA (SISTEMAS DE PRODUÇÃO)</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">AGRONOMIA</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">AGRONOMIA (ENTOMOLOGIA AGRICOLA)</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">AGRONOMIA (GENÉTICA E MELHORAMENTO DE PLANTAS)</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">AGRONOMIA (PRODUCAO E TECNOLOGIA DE SEMENTES)</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">CIÊNCIAS MATEMÁTICAS</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">ZOOTECNIA</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">ZOOTECNIA (PRODUÇÃO ANIMAL)</td>
+<td align="right">1</td>
+</tr>
+</tbody>
+</table>
+<p>Oito trabalhos do Athena, orientados por docentes do PPGCS, não foram
+encontrados na CAPES em nenhum programa. Eles foram verificados
+individualmente pelo Lattes:</p>
+<ul>
+<li>Conceição Lopes (mestrado, 2011): defendido no PPGCS e ausente da
+CAPES e do levantamento. Incluída na lista de egressos.</li>
+<li>Vinicius Antonio Maciel Junior (1999) e Maristela Aparecida Chimello
+(2001): já presentes na CAPES com grafia diferente.</li>
+<li>Anísio José Diniz, Erberto José da Silva e Fernando Mauro Pereira
+Soares: doutorados de 1999–2000, anteriores ao doutorado do PPGCS
+(primeiras titulações em 2008).</li>
+<li>Ona da Silva Freddi (doutorado, 2007): defendido em outro
+programa.</li>
+<li>Maria Alexandra Reis Valpassos (mestrado, 2002): defendido em
+Microbiologia Agropecuária.</li>
+</ul>
+</div>
+<div id="síntese-dos-resultados" class="section level1" number="9">
+<h1><span class="header-section-number">9</span> Síntese dos
+resultados</h1>
+<p>O levantamento de egressos do PPGCS, construído inicialmente a partir
+do Repositório Institucional da Unesp, foi conferido com duas fontes
+independentes: o Catálogo de Teses e Dissertações da CAPES e o catálogo
+Athena das bibliotecas da Unesp. Para o período de 1999, ano das
+primeiras defesas, a 2016, a CAPES registra 355 trabalhos defendidos no
+programa, sendo 230 dissertações de mestrado e 125 teses de doutorado.
+Desses, 307 já constavam no levantamento original, 17 deles com
+diferenças de grafia no nome do egresso, em geral pela inclusão de
+sobrenome após o casamento.</p>
+<p>O cruzamento identificou 48 egressos que não constavam no
+levantamento. Eles se concentram na primeira década do programa, período
+anterior ao depósito digital obrigatório e, por isso, pouco representado
+no Repositório. Entre eles está uma egressa da turma de 2000 que hoje
+integra o corpo docente do programa. Uma dissertação defendida em 2011
+foi localizada apenas no Athena, ausente tanto da CAPES quanto do
+levantamento original, o que mostra o valor de combinar fontes. Para 49
+dos 49 trabalhos recuperados, há registro no acervo da biblioteca da
+FCAV, com link de acesso.</p>
+<p>O cruzamento também evidenciou uma trajetória frequente: egressos que
+realizaram o mestrado no Programa de Agronomia (Produção Vegetal) e o
+doutorado no PPGCS. Vários docentes orientaram nos dois programas, o que
+exigiu verificar caso a caso os trabalhos sem registro na CAPES. Todas
+as decisões manuais dessa verificação estão documentadas neste
+relatório.</p>
+<p>O método tem limitações. O levantamento cobre apenas defesas até 2016
+e o acervo da biblioteca da FCAV. Os dados da CAPES foram informados
+pelos próprios programas e podem conter omissões, como a dissertação de
+2011 mencionada acima. A comparação de nomes por similaridade pode
+deixar de reconhecer a mesma pessoa quando a mudança de nome é grande,
+por isso os casos de fronteira foram conferidos individualmente no
+Currículo Lattes.</p>
+<p>Recomenda-se incorporar os 48 egressos ao levantamento e à página de
+egressos do programa, corrigir as grafias divergentes identificadas e
+estender o mesmo procedimento ao período de 2017 a 2026, para o qual a
+CAPES disponibiliza dados da Plataforma Sucupira.</p>
 <hr />
 <p><em>Busca executada neste knit:</em> FALSE</p>
 </div>

@@ -70,6 +70,8 @@ coleta_ano <- function(ano, q = "any,contains,universidade", limit = 50) {
 }
 
 ```
+
+
 ```{r coleta-completa, eval=params$buscar}
 anos <- 1996:2016
 
@@ -293,6 +295,8 @@ casamentos <- tibble(
 ) |>
   arrange(semente, dist)
 ```
+]
+
 ```{r candidatos}
 orient_ppgcs <- unique(casamentos$athena)
 
@@ -327,17 +331,33 @@ triagem <- base_ppg |>
   arrange(desc(com_solo)) |>
   mutate(ppgcs = "")
 
-write_excel_csv2(triagem, "dados/triagem_orientadores.csv")
+if (!file.exists("dados/triagem_orientadores.csv")) {
+  write_excel_csv2(triagem, "dados/triagem_orientadores.csv")
+}
 ```
 
+```{r orientadores-capes}
+orient_capes <- read_csv("dados/processados/capes_ppgcs_1999_2016.csv",
+                         show_col_types = FALSE) |>
+  filter(!is.na(orientacao)) |>
+  distinct(orient_norm = normaliza(orientacao))
+
+triagem <- read_csv2("dados/triagem_orientadores.csv", show_col_types = FALSE)
+
+d_or <- stringdistmatrix(triagem$orient_norm, orient_capes$orient_norm, method = "jw")
+
+triagem <- triagem |>
+  mutate(dist_capes = round(apply(d_or, 1, min), 3),
+         na_capes   = dist_capes < 0.1)
+```
 
 ```{r}
 # install.packages("capesR")
 library(capesR)
-# capes_files <- download_capes_data(1996:2016, destination = "dados/capes")
-# 
-# capes_sp <- read_capes_data(capes_files, list(uf = "SP"))
-# glimpse(capes_sp)
+capes_files <- download_capes_data(1996:2016, destination = "dados/capes")
+
+capes_sp <- read_capes_data(capes_files, list(uf = "SP"))
+glimpse(capes_sp)
 ```
 
 
@@ -349,15 +369,22 @@ capesR. O programa aparece com três registros ao longo do tempo:
 campus no nome da instituição.
 
 ```{r capes-coleta, eval=params$buscar}
-library(capesR)
 
-capes_files <- download_capes_data(1996:2016, destination = "dados/capes")
+capes_jab <- read_capes_data(capes_files, list(uf = "SP")) |>
+  filter(str_detect(ies, "JABOTICAB|MESQUITA FILHO$")) |>
+  select(ano_base, tipo, autoria, nome_programa)
+
+write_csv(capes_jab, "dados/processados/capes_jaboticabal_todos_programas.csv")
 
 capes_ppgcs <- read_capes_data(capes_files, list(uf = "SP")) |>
   filter(str_detect(ies, "MESQUITA"),
          str_detect(nome_programa, regex("solo", ignore_case = TRUE))) |>
   mutate(nivel = if_else(tipo %in% c("Doutorado", "TESE"), "Doutorado", "Mestrado")) |>
   select(ano_base, nivel, autoria, orientacao, titulo, ies, nome_programa)
+
+capes_jab <- read_capes_data(capes_files, list(uf = "SP")) |>
+  filter(str_detect(ies, "JABOTICAB|MESQUITA FILHO$")) |>
+  select(ano_base, tipo, autoria, nome_programa)
 
 write_csv(capes_ppgcs, "dados/processados/capes_ppgcs_1999_2016.csv")
 ```
@@ -411,6 +438,242 @@ write_excel_csv2(novos_capes, "dados/processados/egressos_capes_nao_levantados.c
 
 c(trabalhos = nrow(novos_capes), pessoas = n_distinct(novos_capes$autoria))
 ```
+
+```{r}
+orient_athena <- c(orient_ppgcs, triagem$orient_norm[triagem$na_capes])
+
+d_falta <- stringdistmatrix(orient_capes$orient_norm, orient_athena, method = "jw")
+
+orient_capes |>
+  mutate(dist = round(apply(d_falta, 1, min), 3)) |>
+  filter(dist >= 0.1)
+
+capes_ppgcs |>
+  filter(str_detect(normaliza(orientacao), "vicente de paula pereira|luiz roberto lopes")) |>
+  select(ano_base, nivel, autoria, orientacao) |>
+  as.data.frame()
+
+athena |>
+  filter(str_detect(normaliza(autor), "nobukuni|vianna")) |>
+  select(ano, autor, orientador, nota, jaboticabal) |>
+  as.data.frame()
+```
+
+```{r}
+inverte <- function(x) {
+  x <- str_remove(str_trim(x), "\\.$")
+  ifelse(str_detect(x, ","),
+         paste(str_trim(str_replace(x, "^[^,]*,", "")), str_extract(x, "^[^,]*")),
+         x)
+}
+
+d_fin <- stringdistmatrix(orientadores$orient_norm, orient_capes$orient_norm, method = "jw")
+orient_ppgcs_final <- orientadores$orient_norm[apply(d_fin, 1, min) < 0.1]
+
+athena_ppgcs <- base_ppg |>
+  mutate(orient_norm = normaliza(orientador)) |>
+  filter(orient_norm %in% orient_ppgcs_final, as.numeric(ano) >= 1999) |>
+  mutate(autor_norm = normaliza(inverte(autor)))
+
+nrow(athena_ppgcs)
+head(athena_ppgcs$autor_norm, 5)
+```
+
+
+```{r}
+capes_jab <- read_csv("dados/processados/capes_jaboticabal_todos_programas.csv")
+
+d_a_capes <- stringdistmatrix(athena_ppgcs$autor_norm, unique(capes_ppgcs$nome_norm), method = "jw")
+d_a_lista <- stringdistmatrix(athena_ppgcs$autor_norm, lista_norm$nome_norm, method = "jw")
+
+athena_ppgcs <- athena_ppgcs |>
+  mutate(na_capes = apply(d_a_capes, 1, min) < 0.1,
+         na_lista = apply(d_a_lista, 1, min) < 0.1)
+
+athena_ppgcs |> count(na_capes, na_lista)
+
+procurar <- c("luis gustavo teixeira", "marcio silveira da silva",
+              "lucas aguilar cortez", "miqueias gomes dos santos",
+              "renata cristina araujo costa")
+
+
+capes_jab |>
+  mutate(nome_norm = normaliza(autoria)) |>
+  filter(nome_norm %in% procurar) |>
+  select(ano_base, tipo, autoria, nome_programa) |>
+  as.data.frame()
+```
+
+
+
+```{r lista-final}
+link_athena <- function(mms) {
+  paste0("https://unesp.primo.exlibrisgroup.com/discovery/fulldisplay?docid=alma",
+         mms, "&vid=55UNESP_INST:UNESP")
+}
+
+athena_ppgcs <- athena_ppgcs |> mutate(link = link_athena(mms))
+
+novos <- novos_capes |>
+  mutate(nome_norm = normaliza(autoria), fonte = "CAPES")
+
+d_n <- stringdistmatrix(novos$nome_norm, athena_ppgcs$autor_norm, method = "jw")
+d_n[outer(novos$nivel, athena_ppgcs$nivel, "!=")] <- 1
+
+novos <- novos |>
+  mutate(d    = apply(d_n, 1, min),
+         link = if_else(d < 0.15, athena_ppgcs$link[apply(d_n, 1, which.min)], NA_character_)) |>
+  select(-d)
+
+so_athena <- athena_ppgcs |>
+  filter(autor_norm == "conceicao lopes") |>
+  transmute(ano_base = as.numeric(ano), nivel, autoria = inverte(autor),
+            orientacao = orientador, titulo, nome_norm = autor_norm,
+            fonte = "Athena", link)
+
+novos <- bind_rows(novos, so_athena) |> arrange(ano_base, autoria)
+
+write_excel_csv2(novos, "dados/processados/egressos_nao_levantados_final.csv")
+
+c(egressos = n_distinct(novos$nome_norm), trabalhos = nrow(novos),
+  com_link = sum(!is.na(novos$link)))
+
+novos |> filter(is.na(link)) |> select(ano_base, nivel, autoria, orientacao)
+
+athena_ppgcs |>
+  filter(str_detect(autor_norm, "ribon|chimello")) |>
+  select(ano, nivel, autor_norm, mms)
+
+
+athena |>
+  filter(str_detect(normaliza(autor), "^ribon")) |>
+  select(ano, autor, orientador, mms)
+
+
+links_manuais <- c("MARISTELA A. CHIMELLO"            = "990001411680206341",
+                   "ADRIANA APARECIDA RIBON PINOTTI"  = "990001439720206341")
+
+novos <- novos |>
+  mutate(link = if_else(autoria %in% names(links_manuais),
+                        link_athena(links_manuais[autoria]), link))
+
+padrao <- paste(orient_capes$orient_norm, collapse = "|")
+
+escondidos <- base_ppg |>
+  mutate(orient_norm = normaliza(orientador)) |>
+  filter(!orient_norm %in% orient_ppgcs_final,
+         str_detect(orient_norm, padrao),
+         as.numeric(ano) >= 1999) |>
+  mutate(autor_norm = normaliza(inverte(autor)))
+
+nrow(escondidos)
+escondidos |> select(ano, nivel, autor_norm, orientador)
+
+```
+
+```{r athena-cruzamento}
+inverte <- function(x) {
+  x <- str_remove(str_trim(x), "\\.$")
+  ifelse(str_detect(x, ","),
+         paste(str_trim(str_replace(x, "^[^,]*,", "")), str_extract(x, "^[^,]*")),
+         x)
+}
+
+d_fin <- stringdistmatrix(orientadores$orient_norm, orient_capes$orient_norm, method = "jw")
+orient_ppgcs_final <- orientadores$orient_norm[apply(d_fin, 1, min) < 0.1]
+
+athena_ppgcs <- base_ppg |>
+  mutate(orient_norm = normaliza(orientador)) |>
+  filter(orient_norm %in% orient_ppgcs_final, as.numeric(ano) >= 1999) |>
+  mutate(autor_norm = normaliza(inverte(autor)))
+
+d_a_capes <- stringdistmatrix(athena_ppgcs$autor_norm, unique(capes_ppgcs$nome_norm), method = "jw")
+d_a_lista <- stringdistmatrix(athena_ppgcs$autor_norm, lista_norm$nome_norm, method = "jw")
+
+athena_ppgcs <- athena_ppgcs |>
+  mutate(na_capes = apply(d_a_capes, 1, min) < 0.1,
+         na_lista = apply(d_a_lista, 1, min) < 0.1)
+
+athena_ppgcs |> count(na_capes, na_lista) |> knitr::kable()
+
+capes_jab <- read_csv("dados/processados/capes_jaboticabal_todos_programas.csv",
+                      show_col_types = FALSE) |>
+  mutate(nome_norm = normaliza(autoria))
+
+fora <- athena_ppgcs |> filter(!na_capes, !na_lista)
+d_f  <- stringdistmatrix(fora$autor_norm, capes_jab$nome_norm, method = "jw")
+
+fora <- fora |>
+  mutate(dist     = apply(d_f, 1, min),
+         programa = if_else(dist < 0.1, capes_jab$nome_programa[apply(d_f, 1, which.min)],
+                            NA_character_))
+
+fora |> count(programa, sort = TRUE) |> knitr::kable()
+```
+
+Oito trabalhos do Athena, orientados por docentes do PPGCS, não foram
+encontrados na CAPES em nenhum programa. Eles foram verificados
+individualmente pelo Lattes:
+
+- Conceição Lopes (mestrado, 2011): defendido no PPGCS e ausente da CAPES
+  e do levantamento. Incluída na lista de egressos.
+- Vinicius Antonio Maciel Junior (1999) e Maristela Aparecida Chimello (2001):
+  já presentes na CAPES com grafia diferente.
+- Anísio José Diniz, Erberto José da Silva e Fernando Mauro Pereira Soares:
+  doutorados de 1999–2000, anteriores ao doutorado do PPGCS (primeiras
+  titulações em 2008).
+- Ona da Silva Freddi (doutorado, 2007): defendido em outro programa.
+- Maria Alexandra Reis Valpassos (mestrado, 2002): defendido em
+  Microbiologia Agropecuária.
+  
+# Síntese dos resultados
+
+```{r sintese, include=FALSE}
+n_capes  <- nrow(capes_ppgcs)
+n_mest   <- sum(capes_ppgcs$nivel == "Mestrado")
+n_dout   <- sum(capes_ppgcs$nivel == "Doutorado")
+n_lista  <- sum(capes_ppgcs$status != "fora da lista")
+n_grafia <- sum(capes_ppgcs$status == "na lista (grafia diferente)")
+n_novos  <- n_distinct(novos$nome_norm)
+n_link   <- sum(!is.na(novos$link))
+```
+
+O levantamento de egressos do PPGCS, construído inicialmente a partir do
+Repositório Institucional da Unesp, foi conferido com duas fontes
+independentes: o Catálogo de Teses e Dissertações da CAPES e o catálogo
+Athena das bibliotecas da Unesp. Para o período de 1999, ano das primeiras
+defesas, a 2016, a CAPES registra `r n_capes` trabalhos defendidos no programa,
+sendo `r n_mest` dissertações de mestrado e `r n_dout` teses de doutorado.
+Desses, `r n_lista` já constavam no levantamento original, `r n_grafia` deles
+com diferenças de grafia no nome do egresso, em geral pela inclusão de
+sobrenome após o casamento.
+
+O cruzamento identificou `r n_novos` egressos que não constavam no levantamento.
+Eles se concentram na primeira década do programa, período anterior ao
+depósito digital obrigatório e, por isso, pouco representado no Repositório.
+Entre eles está uma egressa da turma de 2000 que hoje integra o corpo docente
+do programa. Uma dissertação defendida em 2011 foi localizada apenas no Athena,
+ausente tanto da CAPES quanto do levantamento original, o que mostra o valor de
+combinar fontes. Para `r n_link` dos `r nrow(novos)` trabalhos recuperados, há
+registro no acervo da biblioteca da FCAV, com link de acesso.
+
+O cruzamento também evidenciou uma trajetória frequente: egressos que
+realizaram o mestrado no Programa de Agronomia (Produção Vegetal) e o doutorado
+no PPGCS. Vários docentes orientaram nos dois programas, o que exigiu verificar
+caso a caso os trabalhos sem registro na CAPES. Todas as decisões manuais dessa
+verificação estão documentadas neste relatório.
+
+O método tem limitações. O levantamento cobre apenas defesas até 2016 e o
+acervo da biblioteca da FCAV. Os dados da CAPES foram informados pelos próprios
+programas e podem conter omissões, como a dissertação de 2011 mencionada acima.
+A comparação de nomes por similaridade pode deixar de reconhecer a mesma pessoa
+quando a mudança de nome é grande, por isso os casos de fronteira foram
+conferidos individualmente no Currículo Lattes.
+
+Recomenda-se incorporar os `r n_novos` egressos ao levantamento e à página de
+egressos do programa, corrigir as grafias divergentes identificadas e estender
+o mesmo procedimento ao período de 2017 a 2026, para o qual a CAPES disponibiliza
+dados da Plataforma Sucupira.
 
 ---
 
