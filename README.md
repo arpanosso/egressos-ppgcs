@@ -13,9 +13,8 @@ Faculdade de Ciências Agrárias e Veterinárias (FCAV) · Unesp, Câmpus de Jab
 [**Página dos egressos**](https://arpanosso.github.io/egressos-ppgcs/) ·
 [**Indicadores**](https://arpanosso.github.io/egressos-ppgcs/indicadores/) ·
 [**Site do programa**](https://www.fcav.unesp.br/#!/pos-graduacao/programas-pg/agronomia-ciencia-do-solo) ·
-[**Dados abertos (.xlsx)**](https://arpanosso.github.io/egressos-ppgcs/indicadores/egressos-ppgcs-dados-publicos.xlsx)
-[**Web Scraping e processamento em R**](https://arpanosso.github.io/egressos-ppgcs/athena-scrap.html)
-
+[**Dados abertos (.xlsx)**](https://arpanosso.github.io/egressos-ppgcs/indicadores/egressos-ppgcs-dados-publicos.xlsx)  ·
+[**Web Scraping e processamento em R**](https://arpanosso.github.io/egressos-ppgcs/levantamento-athena/athena-scrap.html)
 </div>
 
 ---
