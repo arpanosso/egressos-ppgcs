@@ -7,12 +7,14 @@ Faculdade de Ciências Agrárias e Veterinárias (FCAV) · Unesp, Câmpus de Jab
 
 ![Nota CAPES](https://img.shields.io/badge/Nota_CAPES-6-8e3b24?style=for-the-badge)
 ![Avaliação](https://img.shields.io/badge/Avalia%C3%A7%C3%A3o_Quadrienal-2025-5a3b26?style=for-the-badge)
-![Egressos](https://img.shields.io/badge/egressos_mapeados-500-c99a5b?style=for-the-badge)
+![Egressos](https://img.shields.io/badge/egressos_mapeados-548-c99a5b?style=for-the-badge)
 ![Fundação](https://img.shields.io/badge/desde-1996-2b1f17?style=for-the-badge)
 
 [**Página dos egressos**](https://arpanosso.github.io/egressos-ppgcs/) ·
 [**Indicadores**](https://arpanosso.github.io/egressos-ppgcs/indicadores/) ·
-[**Site do programa**](https://www.fcav.unesp.br/#!/pos-graduacao/programas-pg/agronomia-ciencia-do-solo) .
+[**Site do programa**](https://www.fcav.unesp.br/#!/pos-graduacao/programas-pg/agronomia-ciencia-do-solo) ·
+[**Dados abertos (.xlsx)**](https://arpanosso.github.io/egressos-ppgcs/indicadores/egressos-ppgcs-dados-publicos.xlsx)
+[**Web Scraping e processamento em R**](https://arpanosso.github.io/egressos-ppgcs/athena-scrap.html)
 
 </div>
 
@@ -23,7 +25,8 @@ Faculdade de Ciências Agrárias e Veterinárias (FCAV) · Unesp, Câmpus de Jab
 Este repositório reúne as páginas públicas do **mapeamento de egressos** do PPGCS, desenvolvido como parte do processo de **autoavaliação** do programa no ano em que ele completa 30 anos. Aqui estão:
 
 - a **página dos egressos**, com mapa interativo, busca por nome, filtros por ano, curso e origem dos dados, e um card para cada titulação;
-- o **painel de indicadores**, com a evolução das titulações, o destino profissional, a distribuição geográfica e a qualidade das informações levantadas.
+- o **painel de indicadores**, com a evolução das titulações, o destino profissional, a distribuição geográfica e a qualidade das informações levantadas;
+- a **planilha de dados abertos**, com as titulações, os títulos dos trabalhos, a orientação e a atuação dos egressos, sem contatos pessoais.
 
 As duas páginas são publicadas pelo GitHub Pages e exibidas no site oficial do programa por meio de `iframe`.
 
@@ -45,15 +48,16 @@ As duas páginas são publicadas pelo GitHub Pages e exibidas no site oficial do
 
 | Indicador | Valor |
 |---|---|
-| Egressos titulados | **500** |
-| Titulações (mestrado + doutorado) | **593** |
-| Mestres formados | **338** |
-| Doutores formados | **255** |
-| Estados brasileiros onde atuam | **20** |
-| Países fora do Brasil | **8** (Colômbia, Costa Rica, Estados Unidos, México, Moçambique, Panamá, Portugal, São Tomé e Príncipe) |
-| Atuam em área relacionada à formação | **97%** dos que informaram |
+| Egressos titulados | **548** |
+| Titulações (mestrado + doutorado) | **645**, de 1997 a 2026 |
+| Mestres formados | **389** |
+| Doutores formados | **256** |
+| Estados brasileiros onde atuam | **24** |
+| Países fora do Brasil | **12** (Colômbia, Costa Rica, Estados Unidos, Malta, México, Moçambique, Panamá, Paraguai, Peru, Polônia, Portugal, São Tomé e Príncipe) |
+| Atuam em área relacionada à formação | **93%** dos que informaram (502 de 538) |
+| Egressos com dados confirmados por eles | **151** |
 
-> Números do levantamento de novembro de 2026. Os indicadores de atuação são calculados sobre os egressos com informação disponível, e cada gráfico do painel informa a sua base de cálculo.
+> Números do levantamento de novembro de 2026. Os valores atualizados estão sempre no [painel de indicadores](https://arpanosso.github.io/egressos-ppgcs/indicadores/). Os indicadores de atuação são calculados sobre os egressos com informação disponível, e cada gráfico do painel informa a sua base de cálculo.
 
 ---
 
@@ -109,7 +113,9 @@ flowchart LR
 |---|---|
 | **Seção Técnica de Pós-Graduação (STPG)** | Nome, curso, título do trabalho, data de defesa, orientação e banca |
 | **Fontes públicas** | Currículo Lattes, páginas institucionais e perfis profissionais, consultados com apoio de ferramentas de inteligência artificial e revisados pela coordenação |
+| **Repositório Institucional da Unesp** | Links e títulos dos trabalhos, obtidos por coleta automatizada e conferidos com os registros da STPG |
 | **Formulário aos egressos** | Atuação atual, cidade, instituição, contato, foto e autorização de publicação |
+| **Equipe do levantamento** | Discentes do PPGCS que ajudaram a localizar e organizar as informações |
 
 ### 2. Origem e confiabilidade das informações
 
@@ -137,6 +143,7 @@ Redes sociais e contatos pessoais só são publicados para egressos com dados co
 - Contatos pessoais, fotos e redes sociais dependem de autorização do egresso.
 - A localização é sempre aproximada, no nível da cidade.
 - Qualquer egresso pode pedir a correção ou a retirada de seus dados pelos canais do programa.
+- A planilha completa, com e-mails e telefones, fica sob guarda da coordenação e **não** é publicada neste repositório. A versão aberta traz apenas dados profissionais e acadêmicos.
 
 ---
 
@@ -156,7 +163,9 @@ Redes sociais e contatos pessoais só são publicados para egressos com dados co
 egressos-ppgcs/
 ├── index.html              # Página dos egressos: mapa, filtros, busca e cards
 ├── indicadores/
-│   └── index.html          # Painel de indicadores
+│   ├── index.html          # Painel de indicadores
+│   └── egressos-ppgcs-dados-publicos.xlsx   # Dados abertos (sem contatos)
+├── LICENSE
 └── README.md
 ```
 
@@ -169,20 +178,37 @@ egressos-ppgcs/
 
 O site oficial passa a exibir a nova versão automaticamente, sem nenhuma alteração na página da Unesp.
 
+## Leve para o seu programa
+
+O código é aberto e pode ser adaptado por outros programas de pós-graduação. O caminho mais curto:
+
+1. Faça um **fork** deste repositório (ou baixe os arquivos em **Code → Download ZIP**).
+2. Troque os cards, a lista de cidades e os textos pelos dados do seu programa, mantendo a mesma estrutura de cada card.
+3. Ative o GitHub Pages em **Settings → Pages**, escolhendo a branch `main`.
+4. Exiba a página no site da sua instituição com um `iframe` apontando para o endereço gerado.
+
+Ao reutilizar, mantenha a referência a este repositório. Antes de publicar, confira a autorização dos egressos e nunca coloque contatos pessoais no repositório.
+
 ---
 
 ## Você é egresso do PPGCS?
 
 Ajude a contar essa história. Confira o seu card e, se quiser atualizar suas informações, responda ao formulário do programa ou entre em contato com a coordenação.
 
-[**Formulário de Egressos**](https://forms.gle/sBt4JKDp37hb26aN6) ·
+[**Formulário de Egressos**](https://forms.gle/sBt4JKDp37hb26aN6)
 
 ## Créditos
 
 **Coordenação do PPGCS**: Prof. Dr. Alan Rodrigo Panosso
 Departamento de Ciências Exatas, FCAV/Unesp, Câmpus de Jaboticabal
 
-Levantamento realizado com a colaboração da Seção Técnica de Pós-Graduação da FCAV e dos egressos que responderam ao formulário. Desenvolvimento das páginas e apoio ao levantamento em fontes públicas com auxílio de inteligência artificial (Claude, Anthropic), com revisão da coordenação.
+Levantamento realizado com a colaboração da Seção Técnica de Pós-Graduação da FCAV, dos egressos que responderam ao formulário e dos discentes da **equipe do levantamento**, futuros cientistas do solo:
+
+- Nome do Aluno 1, mestrando do PPGCS
+- Nome da Aluna 2, mestranda do PPGCS
+- Nome do Aluno 3, doutorando do PPGCS
+
+ Desenvolvimento das páginas e apoio ao levantamento em fontes públicas com auxílio de inteligência artificial (Claude, Anthropic), com revisão da coordenação.
 
 <div align="center">
 
