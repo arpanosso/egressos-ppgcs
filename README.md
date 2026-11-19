@@ -53,8 +53,8 @@ As duas páginas são publicadas pelo GitHub Pages e exibidas no site oficial do
 | Doutores formados | **256** |
 | Estados brasileiros onde atuam | **24** |
 | Países fora do Brasil | **12** (Colômbia, Costa Rica, Estados Unidos, Malta, México, Moçambique, Panamá, Paraguai, Peru, Polônia, Portugal, São Tomé e Príncipe) |
-| Atuam em área relacionada à formação | **93%** dos que informaram (502 de 538) |
-| Egressos com dados confirmados por eles | **151** |
+| Atuam em área relacionada à formação | **92%** dos que informaram (596 de 538) |
+| Egressos com dados confirmados por eles | **77** |
 
 > Números do levantamento de novembro de 2026. Os valores atualizados estão sempre no [painel de indicadores](https://arpanosso.github.io/egressos-ppgcs/indicadores/). Os indicadores de atuação são calculados sobre os egressos com informação disponível, e cada gráfico do painel informa a sua base de cálculo.
 
